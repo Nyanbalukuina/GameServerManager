@@ -1,4 +1,4 @@
-package com.github.gameservermanager.web.api
+package gameservermanager.web
 
 data class ApiValidationError(
     val errors: Map<String, String>,

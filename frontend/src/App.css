@@ -121,6 +121,73 @@ dd {
   background: #1f2937;
 }
 
+.preflight-results {
+  margin-top: 24px;
+}
+
+.summary {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.summary.pass {
+  background: rgb(22 101 52 / 35%);
+  color: #86efac;
+}
+
+.summary.error-status {
+  background: rgb(153 27 27 / 35%);
+  color: #fca5a5;
+}
+
+.check-list {
+  display: grid;
+  gap: 10px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.check {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+  border: 1px solid #374151;
+  border-radius: 8px;
+}
+
+.check .status {
+  padding: 3px 8px;
+  border-radius: 999px;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.check small {
+  display: block;
+  margin-top: 3px;
+  color: #d1d5db;
+}
+
+.check.pass .status {
+  background: #166534;
+  color: #bbf7d0;
+}
+
+.check.warning .status {
+  background: #92400e;
+  color: #fde68a;
+}
+
+.check.error .status {
+  background: #991b1b;
+  color: #fecaca;
+}
+
 @media (max-width: 600px) {
   main {
     margin: 32px auto;
@@ -135,4 +202,3 @@ dd {
     margin-bottom: 12px;
   }
 }
-

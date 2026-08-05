@@ -1,4 +1,4 @@
-package com.github.gameservermanager.web.api
+`package gameservermanager.web
 
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.MethodArgumentNotValidException

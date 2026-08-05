@@ -1,8 +1,8 @@
-package com.github.gameservermanager.web.api.server
+package gameservermanager.web
 
-import com.github.gameservermanager.application.server.CreateServerConstructionPlan
-import com.github.gameservermanager.domain.server.ServerConstructionPlan
-import com.github.gameservermanager.web.api.InvalidConstructionPlanException
+import gameservermanager.application.CreateServerConstructionPlan
+import gameservermanager.domain.ServerConstructionPlan
+import gameservermanager.web.InvalidConstructionPlanException
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody

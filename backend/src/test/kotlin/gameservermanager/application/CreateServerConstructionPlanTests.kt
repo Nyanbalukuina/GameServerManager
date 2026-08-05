@@ -1,4 +1,4 @@
-package com.github.gameservermanager.application.server
+package gameservermanager.application
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

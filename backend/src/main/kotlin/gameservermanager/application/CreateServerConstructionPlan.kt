@@ -1,6 +1,6 @@
-package com.github.gameservermanager.application.server
+package gameservermanager.application
 
-import com.github.gameservermanager.domain.server.ServerConstructionPlan
+import gameservermanager.domain.ServerConstructionPlan
 import org.springframework.stereotype.Service
 
 @Service

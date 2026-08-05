@@ -1,4 +1,4 @@
-package com.github.gameservermanager.domain.server
+package gameservermanager.domain
 
 data class ServerConstructionPlan(
     val serverName: String,

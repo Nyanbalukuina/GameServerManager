@@ -1,4 +1,4 @@
-package com.github.gameservermanager.web.api.server
+package gameservermanager.web
 
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min

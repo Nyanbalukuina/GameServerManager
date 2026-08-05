@@ -1,4 +1,4 @@
-package com.github.gameservermanager
+package gameservermanager
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest

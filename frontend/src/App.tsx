@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react'
+import { runServerPreflight } from './api/serverPreflight'
 import { createServerConstructionPlan } from './api/serverConstructionPlans'
 import type {
   NewServerRequest,
   ServerConstructionPlan,
+  ServerPreflightReport,
   ValidationErrors,
 } from './types/serverConstruction'
 import './App.css'
@@ -21,8 +23,11 @@ const initialForm: NewServerRequest = {
 function App() {
   const [form, setForm] = useState(initialForm)
   const [plan, setPlan] = useState<ServerConstructionPlan | null>(null)
+  const [preflight, setPreflight] = useState<ServerPreflightReport | null>(null)
+  const [preflightError, setPreflightError] = useState<string | null>(null)
   const [errors, setErrors] = useState<ValidationErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isChecking, setIsChecking] = useState(false)
 
   const updateField = (field: keyof NewServerRequest, value: string) => {
     setForm((current) => ({ ...current, [field]: value }))
@@ -47,6 +52,28 @@ function App() {
     }
 
     setIsSubmitting(false)
+  }
+
+  const checkEnvironment = async () => {
+    if (!plan) {
+      return
+    }
+
+    setIsChecking(true)
+    setPreflightError(null)
+    const result = await runServerPreflight(plan)
+    if (result.ok) {
+      setPreflight(result.report)
+    } else {
+      setPreflightError(result.message)
+    }
+    setIsChecking(false)
+  }
+
+  const returnToForm = () => {
+    setPlan(null)
+    setPreflight(null)
+    setPreflightError(null)
   }
 
   if (plan) {
@@ -80,8 +107,38 @@ function App() {
           </dl>
         </section>
 
-        <p className="notice">実際の構築処理は次のフェーズで実装します。</p>
-        <button type="button" className="secondary" onClick={() => setPlan(null)}>
+        <section className="card">
+          <h2>構築前の事前検証</h2>
+          <p>Windowsのパス、空き容量、ポート、SteamCMDの状態を確認します。</p>
+          <button type="button" onClick={checkEnvironment} disabled={isChecking}>
+            {isChecking ? '検証中...' : '事前検証を実行'}
+          </button>
+
+          {preflightError && <p className="error request-error">{preflightError}</p>}
+          {preflight && (
+            <div className="preflight-results">
+              <p className={preflight.canProceed ? 'summary pass' : 'summary error-status'}>
+                {preflight.canProceed
+                  ? '構築を進められる環境です'
+                  : '修正が必要な項目があります'}
+              </p>
+              <ul className="check-list">
+                {preflight.checks.map((check) => (
+                  <li key={check.id} className={`check ${check.status.toLowerCase()}`}>
+                    <span className="status">{statusLabel(check.status)}</span>
+                    <span>
+                      <strong>{check.label}</strong>
+                      <small>{check.message}</small>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </section>
+
+        <p className="notice">検証ではフォルダー作成や設定変更を行いません。</p>
+        <button type="button" className="secondary" onClick={returnToForm}>
           入力画面へ戻る
         </button>
       </main>
@@ -181,6 +238,17 @@ function App() {
   )
 }
 
+function statusLabel(status: 'PASS' | 'WARNING' | 'ERROR') {
+  switch (status) {
+    case 'PASS':
+      return '成功'
+    case 'WARNING':
+      return '警告'
+    case 'ERROR':
+      return 'エラー'
+  }
+}
+
 type FieldProps = {
   id: string
   label: string
@@ -221,4 +289,3 @@ function Field({
 }
 
 export default App
-

@@ -20,5 +20,18 @@ export type ServerConstructionPlan = {
   adminPasswordConfigured: boolean
 }
 
-export type ValidationErrors = Partial<Record<keyof NewServerRequest | 'request', string>>
+export type PreflightStatus = 'PASS' | 'WARNING' | 'ERROR'
 
+export type PreflightCheck = {
+  id: string
+  label: string
+  status: PreflightStatus
+  message: string
+}
+
+export type ServerPreflightReport = {
+  canProceed: boolean
+  checks: PreflightCheck[]
+}
+
+export type ValidationErrors = Partial<Record<keyof NewServerRequest | 'request', string>>

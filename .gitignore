@@ -4,6 +4,7 @@
 .vscode/
 
 build/
+bin/
 dist/
 dist-ssr/
 node_modules/
