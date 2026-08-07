@@ -3,6 +3,40 @@ main {
   margin: 56px auto;
 }
 
+.back-link {
+  display: inline-block;
+  margin-bottom: 24px;
+  color: #93c5fd;
+}
+
+.game-list {
+  display: grid;
+  gap: 16px;
+}
+
+.game-card {
+  display: grid;
+  gap: 6px;
+  padding: 18px;
+  border: 1px solid #4b5563;
+  border-radius: 10px;
+  color: #f9fafb;
+  text-decoration: none;
+}
+
+.game-card:not(.unavailable):hover {
+  border-color: #60a5fa;
+  background: rgb(37 99 235 / 12%);
+}
+
+.game-card span {
+  color: #d1d5db;
+}
+
+.game-card.unavailable {
+  opacity: 0.55;
+}
+
 header {
   margin-bottom: 32px;
 }

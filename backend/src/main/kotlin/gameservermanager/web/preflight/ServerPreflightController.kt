@@ -19,15 +19,16 @@ class ServerPreflightController(
     // POST /api/server-construction-preflight を受け付ける。
     @PostMapping
     // JSONのリクエストボディをServerPreflightRequestへ変換し、入力値を検証する。
-    fun run(@Valid @RequestBody request: ServerPreflightRequest): ServerPreflightReport =
+    fun run(@Valid @RequestBody request: ServerPreflightRequest): ServerPreflightReport {
         // API用の入力データをユースケース用のCommandへ詰め替え、事前検証を実行する。
-        runServerPreflight.execute(
-            RunServerPreflight.Command(
-                installPath = request.installPath,
-                steamCmdPath = request.steamCmdPath,
-                // バリデーション通過後のため、nullではないことを確認してIntとして渡す。
-                gamePort = requireNotNull(request.gamePort),
-                rconPort = requireNotNull(request.rconPort),
-            ),
+        val command = RunServerPreflight.Command(
+            installPath = request.installPath,
+            steamCmdPath = request.steamCmdPath,
+            // バリデーション通過後のため、nullではないことを確認してIntとして渡す。
+            gamePort = requireNotNull(request.gamePort),
+            rconPort = requireNotNull(request.rconPort),
         )
+
+        return runServerPreflight.execute(command)
+    }
 }

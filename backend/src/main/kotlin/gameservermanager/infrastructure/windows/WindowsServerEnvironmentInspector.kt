@@ -44,21 +44,23 @@ class WindowsServerEnvironmentInspector : ServerEnvironmentInspector {
         )
     }
 
-    override fun isUdpPortAvailable(port: Int): Boolean =
-        runCatching {
+    override fun isUdpPortAvailable(port: Int): Boolean {
+        return runCatching {
             DatagramSocket(null).use { socket ->
                 socket.reuseAddress = false
                 socket.bind(InetSocketAddress(port))
             }
         }.isSuccess
+    }
 
-    override fun isTcpPortAvailable(port: Int): Boolean =
-        runCatching {
+    override fun isTcpPortAvailable(port: Int): Boolean {
+        return runCatching {
             ServerSocket().use { socket ->
                 socket.reuseAddress = false
                 socket.bind(InetSocketAddress(port))
             }
         }.isSuccess
+    }
 
     private fun findNearestExistingPath(path: Path): Path? {
         var current: Path? = path
@@ -68,8 +70,8 @@ class WindowsServerEnvironmentInspector : ServerEnvironmentInspector {
         return current
     }
 
-    private fun invalidPath() =
-        PathInspection(
+    private fun invalidPath(): PathInspection {
+        return PathInspection(
             valid = false,
             absolute = false,
             root = false,
@@ -79,5 +81,5 @@ class WindowsServerEnvironmentInspector : ServerEnvironmentInspector {
             usableSpaceBytes = null,
             executableExists = false,
         )
+    }
 }
-

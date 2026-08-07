@@ -69,8 +69,8 @@ class ServerConstructionPlanControllerTests @Autowired constructor(
         }
     }
 
-    private fun validRequest(): String =
-        """
+    private fun validRequest(): String {
+        return """
             {
               "serverName": "Palworld Server",
               "installPath": "C:\\GameServers\\Palworld",
@@ -82,4 +82,5 @@ class ServerConstructionPlanControllerTests @Autowired constructor(
               "adminPassword": "admin-password"
             }
         """.trimIndent()
+    }
 }

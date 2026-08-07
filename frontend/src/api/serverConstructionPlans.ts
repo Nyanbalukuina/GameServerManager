@@ -51,4 +51,3 @@ function toNumber(value: string): number | null {
   const number = Number(value)
   return Number.isFinite(number) ? number : null
 }
-

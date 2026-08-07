@@ -10,16 +10,18 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 class ApiExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleValidation(exception: MethodArgumentNotValidException): ApiValidationError =
-        ApiValidationError(
+    fun handleValidation(exception: MethodArgumentNotValidException): ApiValidationError {
+        return ApiValidationError(
             exception.bindingResult.fieldErrors
                 .associate { it.field to (it.defaultMessage ?: "入力内容を確認してください") },
         )
+    }
 
     @ExceptionHandler(InvalidConstructionPlanException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    fun handleInvalidPlan(exception: InvalidConstructionPlanException): ApiValidationError =
-        ApiValidationError(exception.errors)
+    fun handleInvalidPlan(exception: InvalidConstructionPlanException): ApiValidationError {
+        return ApiValidationError(exception.errors)
+    }
 }
 
 class InvalidConstructionPlanException(

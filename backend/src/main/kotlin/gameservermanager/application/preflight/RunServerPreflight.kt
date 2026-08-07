@@ -63,12 +63,13 @@ class RunServerPreflight(
         }
     }
 
-    private fun pathsDistinct(command: Command): PreflightCheck =
-        if (normalize(command.installPath) != normalize(command.steamCmdPath)) {
+    private fun pathsDistinct(command: Command): PreflightCheck {
+        return if (normalize(command.installPath) != normalize(command.steamCmdPath)) {
             pass("paths.distinct", "保存先の分離", "インストール先とSteamCMD保存先は分離されています")
         } else {
             error("paths.distinct", "保存先の分離", "インストール先とSteamCMD保存先を分けてください")
         }
+    }
 
     private fun storageSpace(inspection: PathInspection): PreflightCheck {
         val usableSpace = inspection.usableSpaceBytes
@@ -85,38 +86,45 @@ class RunServerPreflight(
         }
     }
 
-    private fun steamCmdInstallation(inspection: PathInspection): PreflightCheck =
-        if (inspection.executableExists) {
+    private fun steamCmdInstallation(inspection: PathInspection): PreflightCheck {
+        return if (inspection.executableExists) {
             pass("steamcmd.installed", "SteamCMD", "steamcmd.exeが見つかりました")
         } else {
             warning("steamcmd.installed", "SteamCMD", "SteamCMDは構築時にダウンロードされます")
         }
+    }
 
-    private fun gamePort(port: Int): PreflightCheck =
-        if (environmentInspector.isUdpPortAvailable(port)) {
+    private fun gamePort(port: Int): PreflightCheck {
+        return if (environmentInspector.isUdpPortAvailable(port)) {
             pass("port.game", "ゲームポート UDP $port", "使用できます")
         } else {
             error("port.game", "ゲームポート UDP $port", "既に使用されています")
         }
+    }
 
-    private fun rconPort(port: Int): PreflightCheck =
-        if (environmentInspector.isTcpPortAvailable(port)) {
+    private fun rconPort(port: Int): PreflightCheck {
+        return if (environmentInspector.isTcpPortAvailable(port)) {
             pass("port.rcon", "RCONポート TCP $port", "使用できます")
         } else {
             error("port.rcon", "RCONポート TCP $port", "既に使用されています")
         }
+    }
 
-    private fun normalize(path: String): String =
-        path.trim().trimEnd('\\', '/').lowercase()
+    private fun normalize(path: String): String {
+        return path.trim().trimEnd('\\', '/').lowercase()
+    }
 
-    private fun pass(id: String, label: String, message: String) =
-        PreflightCheck(id, label, PreflightStatus.PASS, message)
+    private fun pass(id: String, label: String, message: String): PreflightCheck {
+        return PreflightCheck(id, label, PreflightStatus.PASS, message)
+    }
 
-    private fun warning(id: String, label: String, message: String) =
-        PreflightCheck(id, label, PreflightStatus.WARNING, message)
+    private fun warning(id: String, label: String, message: String): PreflightCheck {
+        return PreflightCheck(id, label, PreflightStatus.WARNING, message)
+    }
 
-    private fun error(id: String, label: String, message: String) =
-        PreflightCheck(id, label, PreflightStatus.ERROR, message)
+    private fun error(id: String, label: String, message: String): PreflightCheck {
+        return PreflightCheck(id, label, PreflightStatus.ERROR, message)
+    }
 
     data class Command(
         val installPath: String,

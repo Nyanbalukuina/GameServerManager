@@ -5,8 +5,8 @@ import org.springframework.stereotype.Service
 
 @Service
 class CreateServerConstructionPlan {
-    fun execute(command: Command): ServerConstructionPlan =
-        ServerConstructionPlan(
+    fun execute(command: Command): ServerConstructionPlan {
+        return ServerConstructionPlan(
             serverName = command.serverName.trim(),
             installPath = command.installPath.trim(),
             steamCmdPath = command.steamCmdPath.trim(),
@@ -16,6 +16,7 @@ class CreateServerConstructionPlan {
             serverPasswordConfigured = command.serverPassword.isNotBlank(),
             adminPasswordConfigured = command.adminPassword.isNotBlank(),
         )
+    }
 
     data class Command(
         val serverName: String,

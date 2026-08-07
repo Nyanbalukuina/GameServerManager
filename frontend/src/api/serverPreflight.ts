@@ -31,4 +31,3 @@ export async function runServerPreflight(
     return { ok: false, message: 'バックエンドへ接続できません' }
   }
 }
-

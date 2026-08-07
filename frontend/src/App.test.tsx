@@ -1,12 +1,27 @@
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import App from './App'
 
 describe('App', () => {
+  beforeEach(() => {
+    window.history.pushState({}, '', '/servers/new/palworld')
+  })
+
   afterEach(() => {
     cleanup()
     vi.unstubAllGlobals()
+  })
+
+  it('ゲーム選択画面からPalworld構築画面へ移動する', async () => {
+    const user = userEvent.setup()
+    window.history.pushState({}, '', '/servers/new')
+    render(<App />)
+
+    expect(screen.getByRole('heading', { name: '新規ゲームサーバー構築' })).toBeInTheDocument()
+    await user.click(screen.getByRole('link', { name: /Palworld/ }))
+
+    expect(screen.getByRole('heading', { name: '新規Palworldサーバー構築' })).toBeInTheDocument()
   })
 
   it('新規サーバー構築フォームを表示する', () => {
@@ -14,6 +29,8 @@ describe('App', () => {
 
     expect(screen.getByRole('heading', { name: '新規Palworldサーバー構築' })).toBeInTheDocument()
     expect(screen.getByLabelText('サーバー名')).toBeInTheDocument()
+    expect(screen.getByLabelText('インストール先')).toHaveValue('C:\\GameServers\\Palworld')
+    expect(screen.getByLabelText('SteamCMDの保存先')).toHaveValue('C:\\GameServers\\SteamCMD')
     expect(screen.getByRole('button', { name: '構築計画を確認' })).toBeInTheDocument()
   })
 
@@ -37,8 +54,6 @@ describe('App', () => {
     render(<App />)
 
     await user.type(screen.getByLabelText('サーバー名'), 'Palworld Server')
-    await user.type(screen.getByLabelText('インストール先'), 'C:\\GameServers\\Palworld')
-    await user.type(screen.getByLabelText('SteamCMDの保存先'), 'C:\\GameServers\\SteamCMD')
     await user.type(screen.getByLabelText('管理者パスワード'), 'admin-password')
     await user.click(screen.getByRole('button', { name: '構築計画を確認' }))
 
@@ -105,8 +120,6 @@ describe('App', () => {
     render(<App />)
 
     await user.type(screen.getByLabelText('サーバー名'), 'Palworld Server')
-    await user.type(screen.getByLabelText('インストール先'), 'C:\\GameServers\\Palworld')
-    await user.type(screen.getByLabelText('SteamCMDの保存先'), 'C:\\GameServers\\SteamCMD')
     await user.type(screen.getByLabelText('管理者パスワード'), 'admin-password')
     await user.click(screen.getByRole('button', { name: '構築計画を確認' }))
     await screen.findByRole('heading', { name: '構築計画' })

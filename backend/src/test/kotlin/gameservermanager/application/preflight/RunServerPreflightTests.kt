@@ -69,8 +69,8 @@ class RunServerPreflightTests {
         private val udpPortAvailable: Boolean = true,
         private val tcpPortAvailable: Boolean = true,
     ) : ServerEnvironmentInspector {
-        override fun inspectPath(path: String, executableName: String?) =
-            PathInspection(
+        override fun inspectPath(path: String, executableName: String?): PathInspection {
+            return PathInspection(
                 valid = true,
                 absolute = true,
                 root = false,
@@ -80,14 +80,18 @@ class RunServerPreflightTests {
                 usableSpaceBytes = usableSpaceBytes,
                 executableExists = false,
             )
+        }
 
-        override fun isUdpPortAvailable(port: Int) = udpPortAvailable
+        override fun isUdpPortAvailable(port: Int): Boolean {
+            return udpPortAvailable
+        }
 
-        override fun isTcpPortAvailable(port: Int) = tcpPortAvailable
+        override fun isTcpPortAvailable(port: Int): Boolean {
+            return tcpPortAvailable
+        }
     }
 
     companion object {
         private const val GIBIBYTE = 1024L * 1024L * 1024L
     }
 }
-
