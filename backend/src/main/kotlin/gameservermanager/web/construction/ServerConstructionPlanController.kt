@@ -1,8 +1,8 @@
-package gameservermanager.web
+package gameservermanager.web.construction
 
-import gameservermanager.application.CreateServerConstructionPlan
-import gameservermanager.domain.ServerConstructionPlan
-import gameservermanager.web.InvalidConstructionPlanException
+import gameservermanager.application.construction.CreateServerConstructionPlan
+import gameservermanager.domain.construction.ServerConstructionPlan
+import gameservermanager.web.error.InvalidConstructionPlanException
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -36,4 +36,3 @@ class ServerConstructionPlanController(
         )
     }
 }
-

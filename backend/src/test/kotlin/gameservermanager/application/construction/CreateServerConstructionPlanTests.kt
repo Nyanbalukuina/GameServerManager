@@ -1,4 +1,4 @@
-package gameservermanager.application
+package gameservermanager.application.construction
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -28,4 +28,3 @@ class CreateServerConstructionPlanTests {
         assertThat(plan.adminPasswordConfigured).isTrue()
     }
 }
-

@@ -1,6 +1,6 @@
-package gameservermanager.application
+package gameservermanager.application.construction
 
-import gameservermanager.domain.ServerConstructionPlan
+import gameservermanager.domain.construction.ServerConstructionPlan
 import org.springframework.stereotype.Service
 
 @Service
@@ -28,4 +28,3 @@ class CreateServerConstructionPlan {
         val adminPassword: String,
     )
 }
-

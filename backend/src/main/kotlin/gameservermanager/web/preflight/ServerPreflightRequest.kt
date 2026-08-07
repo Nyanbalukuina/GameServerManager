@@ -1,4 +1,4 @@
-package gameservermanager.web
+package gameservermanager.web.preflight
 
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
@@ -22,4 +22,3 @@ data class ServerPreflightRequest(
     @field:Max(65535)
     val rconPort: Int? = null,
 )
-

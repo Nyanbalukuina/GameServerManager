@@ -1,4 +1,4 @@
-package gameservermanager.web
+package gameservermanager.web.construction
 
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
@@ -41,4 +41,3 @@ data class NewServerRequest(
     @field:Size(min = 8, max = 64, message = "管理者パスワードは8文字以上64文字以内で入力してください")
     val adminPassword: String = "",
 )
-

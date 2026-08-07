@@ -1,4 +1,4 @@
-`package gameservermanager.web
+package gameservermanager.web.error
 
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.MethodArgumentNotValidException
@@ -25,4 +25,3 @@ class ApiExceptionHandler {
 class InvalidConstructionPlanException(
     val errors: Map<String, String>,
 ) : RuntimeException()
-

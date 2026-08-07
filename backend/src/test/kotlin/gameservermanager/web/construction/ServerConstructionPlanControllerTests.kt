@@ -1,7 +1,7 @@
-package gameservermanager.web
+package gameservermanager.web.construction
 
-import gameservermanager.application.CreateServerConstructionPlan
-import gameservermanager.web.ApiExceptionHandler
+import gameservermanager.application.construction.CreateServerConstructionPlan
+import gameservermanager.web.error.ApiExceptionHandler
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest

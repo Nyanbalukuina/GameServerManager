@@ -1,4 +1,4 @@
-package gameservermanager.web
+package gameservermanager.web.preflight
 
 import gameservermanager.application.preflight.RunServerPreflight
 import gameservermanager.domain.preflight.PreflightCheck

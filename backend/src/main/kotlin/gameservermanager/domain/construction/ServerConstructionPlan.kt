@@ -1,4 +1,4 @@
-package gameservermanager.domain
+package gameservermanager.domain.construction
 
 data class ServerConstructionPlan(
     val serverName: String,
@@ -10,4 +10,3 @@ data class ServerConstructionPlan(
     val serverPasswordConfigured: Boolean,
     val adminPasswordConfigured: Boolean,
 )
-
