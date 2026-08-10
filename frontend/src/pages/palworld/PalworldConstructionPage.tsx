@@ -4,6 +4,7 @@ import { runServerPreflight } from '../../api/serverPreflight'
 import { createServerConstructionPlan } from '../../api/palworldConstructionPlans'
 import { getStorageConfiguration } from '../../api/storageConfiguration'
 import { getGameServers } from '../../api/gameServers'
+import { constructPalworldServer } from '../../api/palworldConstruction'
 import { AppLink } from '../../components/common/AppLink'
 import { PalworldConstructionPlan } from '../../components/palworld/PalworldConstructionPlan'
 import { PalworldConstructionForm } from '../../components/palworld/PalworldConstructionForm'
@@ -12,7 +13,11 @@ import type {
   ServerConstructionPlan as ServerConstructionPlanType,
   ValidationErrors,
 } from '../../types/palworldConstruction'
-import type { DemoConstructionReport, ServerPreflightReport } from '../../types/serverOperations'
+import type {
+  DemoConstructionReport,
+  ServerConstructionReport,
+  ServerPreflightReport,
+} from '../../types/serverOperations'
 import '../../styles/serverConstruction.css'
 
 const initialForm: NewServerRequest = {
@@ -42,6 +47,7 @@ export function PalworldConstructionPage() {
   const [isConstructing     , setIsConstructing     ] = useState(false)
   const [constructionReport , setConstructionReport ] = useState<DemoConstructionReport | null>(null)
   const [constructionError  , setConstructionError  ] = useState<string | null>(null)
+  const [realReport         , setRealReport          ] = useState<ServerConstructionReport | null>(null)
   const [alreadyCreated     , setAlreadyCreated     ] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -121,11 +127,25 @@ export function PalworldConstructionPage() {
     setIsConstructing(false)
   }
 
+  const runRealConstruction = async () => {
+    setIsConstructing(true)
+    setConstructionError(null)
+    const result = await constructPalworldServer(form)
+    if (result.ok) {
+      setRealReport(result.report)
+      setForm((current) => ({ ...current, serverPassword: '', adminPassword: '' }))
+    } else {
+      setConstructionError(result.errors.request ?? 'Palworldサーバーを構築できませんでした')
+    }
+    setIsConstructing(false)
+  }
+
   const returnToForm = () => {
     setPlan(null)
     setPreflight(null)
     setPreflightError(null)
     setConstructionReport(null)
+    setRealReport(null)
     setConstructionError(null)
   }
 
@@ -151,9 +171,11 @@ export function PalworldConstructionPage() {
           isChecking={isChecking}
           isConstructing={isConstructing}
           constructionReport={constructionReport}
+          realReport={realReport}
           constructionError={constructionError}
           onCheckEnvironment={checkEnvironment}
           onRunDemoConstruction={runDemoConstruction}
+          onRunRealConstruction={runRealConstruction}
           onReturnToForm={returnToForm}
         />
       ) : (

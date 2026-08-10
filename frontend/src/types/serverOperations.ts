@@ -27,3 +27,10 @@ export type DemoConstructionReport = {
   workspacePath: string
   steps: ConstructionStep[]
 }
+
+export type ServerConstructionReport = {
+  completed: boolean
+  mode: 'REAL'
+  installPath: string
+  steps: ConstructionStep[]
+}

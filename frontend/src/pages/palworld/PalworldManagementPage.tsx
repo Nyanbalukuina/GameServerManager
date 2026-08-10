@@ -51,7 +51,7 @@ export function PalworldManagementPage() {
       <header>
         <p className="eyebrow">Game Server Manager</p>
         <h1>Palworldサーバー管理</h1>
-        <p>デモサーバーの状態確認と模擬操作を行います。</p>
+        <p>登録されたPalworldサーバーの状態を確認します。</p>
       </header>
       {error && <p className="error request-error" role="alert">{error}</p>}
       {!server && !error && <p>読み込み中...</p>}
@@ -66,20 +66,31 @@ export function PalworldManagementPage() {
               <dt>RCONポート</dt><dd>{server.rconPort}</dd>
               <dt>デモデータ</dt><dd>{server.workspacePath}</dd>
             </dl>
-            <div className="button-row">
-              <button type="button" disabled={busy || server.state === 'RUNNING'} onClick={() => void operate('START')}>起動</button>
-              <button type="button" disabled={busy || server.state === 'STOPPED'} onClick={() => void operate('STOP')}>停止</button>
-              <button type="button" disabled={busy || server.state === 'STOPPED'} onClick={() => void operate('RESTART')}>再起動</button>
-            </div>
-            <p className="notice">デモ操作のため、実際のゲームプロセスは起動しません。</p>
+            {server.mode === 'DEMO' ? (
+              <>
+                <div className="button-row">
+                  <button type="button" disabled={busy || server.state === 'RUNNING'} onClick={() => void operate('START')}>起動</button>
+                  <button type="button" disabled={busy || server.state === 'STOPPED'} onClick={() => void operate('STOP')}>停止</button>
+                  <button type="button" disabled={busy || server.state === 'STOPPED'} onClick={() => void operate('RESTART')}>再起動</button>
+                </div>
+                <p className="notice">デモ操作のため、実際のゲームプロセスは起動しません。</p>
+              </>
+            ) : (
+              <>
+                <p><strong>接続先:</strong> サーバーPCのIPアドレス:{server.gamePort}</p>
+                <p className="notice">実サーバーの起動・停止操作は次の実装でこの画面へ接続します。</p>
+              </>
+            )}
           </section>
-          <section className="card danger-zone">
-            <h2>デモサーバーを削除</h2>
-            <p>一時領域のデモデータとPalworldの登録を削除します。</p>
-            <label htmlFor="deleteConfirmation">確認のためPALWORLDと入力してください</label>
-            <input id="deleteConfirmation" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} />
-            <button type="button" disabled={busy || confirmation !== 'PALWORLD'} onClick={() => void remove()}>デモサーバーを削除</button>
-          </section>
+          {server.mode === 'DEMO' && (
+            <section className="card danger-zone">
+              <h2>デモサーバーを削除</h2>
+              <p>一時領域のデモデータとPalworldの登録を削除します。</p>
+              <label htmlFor="deleteConfirmation">確認のためPALWORLDと入力してください</label>
+              <input id="deleteConfirmation" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} />
+              <button type="button" disabled={busy || confirmation !== 'PALWORLD'} onClick={() => void remove()}>デモサーバーを削除</button>
+            </section>
+          )}
         </>
       )}
     </main>

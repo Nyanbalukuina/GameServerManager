@@ -1,7 +1,11 @@
 import type {
   ServerConstructionPlan,
 } from '../../types/palworldConstruction'
-import type { DemoConstructionReport, ServerPreflightReport } from '../../types/serverOperations'
+import type {
+  DemoConstructionReport,
+  ServerConstructionReport,
+  ServerPreflightReport,
+} from '../../types/serverOperations'
 import { ConstructionProgress } from '../common/ConstructionProgress'
 import { PreflightResults } from '../common/PreflightResults'
 import { AppLink } from '../common/AppLink'
@@ -13,9 +17,11 @@ type PalworldConstructionPlanProps = {
   isChecking: boolean
   isConstructing: boolean
   constructionReport: DemoConstructionReport | null
+  realReport: ServerConstructionReport | null
   constructionError: string | null
   onCheckEnvironment: () => Promise<void>
   onRunDemoConstruction: () => Promise<void>
+  onRunRealConstruction: () => Promise<void>
   onReturnToForm: () => void
 }
 
@@ -26,9 +32,11 @@ export function PalworldConstructionPlan({
   isChecking,
   isConstructing,
   constructionReport,
+  realReport,
   constructionError,
   onCheckEnvironment,
   onRunDemoConstruction,
+  onRunRealConstruction,
   onReturnToForm,
 }: PalworldConstructionPlanProps) {
   return (
@@ -72,6 +80,23 @@ export function PalworldConstructionPlan({
       </section>
 
       <section className="card">
+        <h2>実Palworldサーバー構築</h2>
+        <p>SteamCMDとPalworld Dedicated Serverを導入し、設定保存と起動確認まで実行します。ダウンロードには時間がかかります。</p>
+        <button
+          type="button"
+          onClick={() => void onRunRealConstruction()}
+          disabled={!preflight?.canProceed || isConstructing || realReport?.completed === true}
+          aria-busy={isConstructing}
+        >
+          {isConstructing ? '構築中...' : 'Palworldサーバーを構築して起動'}
+        </button>
+        {!preflight && <p className="notice">先に事前検証を実行してください。</p>}
+        {preflight && !preflight.canProceed && (
+          <p className="notice">事前検証のエラーを解消すると実構築できます。</p>
+        )}
+      </section>
+
+      <section className="card">
         <h2>構築前の事前検証</h2>
         <p>Windowsのパス、空き容量、ポート、SteamCMDの状態を確認します。</p>
         <button
@@ -108,7 +133,8 @@ export function PalworldConstructionPlan({
       </section>
 
       {constructionReport && <ConstructionProgress report={constructionReport} />}
-      {constructionReport?.completed && (
+      {realReport && <ConstructionProgress report={realReport} />}
+      {(constructionReport?.completed || realReport?.completed) && (
         <AppLink className="management-link" href="/servers/palworld">Palworld管理画面を開く</AppLink>
       )}
 

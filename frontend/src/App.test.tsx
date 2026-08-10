@@ -212,6 +212,51 @@ describe('App', () => {
     expect(finalRequest.adminPassword).toBe('admin-password')
     expect(screen.queryByText('admin-password')).not.toBeInTheDocument()
   })
+
+  it('事前検証成功後に実Palworldサーバーを構築して起動する', async () => {
+    const user = userEvent.setup()
+    vi.stubGlobal('fetch', authenticatedFetch([
+      response({
+        serverName: 'Palworld Server',
+        installPath: 'C:\\GameServerManager\\servers\\palworld\\main\\runtime',
+        steamCmdPath: 'C:\\GameServerManager\\tools\\steamcmd',
+        gamePort: 8211,
+        rconPort: 25575,
+        maxPlayers: 3,
+        serverPasswordConfigured: false,
+        adminPasswordConfigured: true,
+        automationEnabled: false,
+        shutdownTime: '04:00',
+        startupTime: '09:00',
+        backupAfterShutdown: true,
+        backupRetentionCount: 3,
+      }),
+      response({ canProceed: true, checks: [] }),
+      response({
+        completed: true,
+        mode: 'REAL',
+        installPath: 'C:\\GameServerManager\\servers\\palworld\\main\\runtime',
+        steps: [{
+          id: 'start',
+          label: 'Palworldサーバーの起動',
+          status: 'COMPLETED',
+          message: 'ゲームポートの待受を確認しました',
+        }],
+      }),
+    ]))
+    render(<App />)
+
+    await user.type(await screen.findByLabelText('サーバー名'), 'Palworld Server')
+    await user.type(screen.getByLabelText('管理者パスワード'), 'admin-password')
+    await user.click(screen.getByRole('button', { name: '構築計画を確認' }))
+    await user.click(await screen.findByRole('button', { name: '事前検証を実行' }))
+    await screen.findByText('構築を進められる環境です')
+    await user.click(screen.getByRole('button', { name: 'Palworldサーバーを構築して起動' }))
+
+    expect(await screen.findByText('Palworldサーバーを構築して起動しました')).toBeInTheDocument()
+    expect(screen.getByText('ゲームポートの待受を確認しました')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Palworld管理画面を開く' })).toBeInTheDocument()
+  })
 })
 
 function response(body: unknown, status = 200): Response {
