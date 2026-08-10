@@ -4,14 +4,22 @@ import gameservermanager.application.preflight.ManagedPathPolicy
 import gameservermanager.domain.construction.ConstructionStep
 import gameservermanager.domain.construction.ConstructionStepStatus
 import gameservermanager.domain.construction.DemoConstructionReport
+import gameservermanager.application.server.GameServerRegistrationStore
+import gameservermanager.domain.server.GameServerRegistration
 import org.springframework.stereotype.Service
+import java.time.Clock
 
 @Service
 class RunDemoServerConstruction(
     private val managedPathPolicy: ManagedPathPolicy,
     private val steamCmdInstaller: SteamCmdInstaller,
+    private val demoServerConfigurator: DemoServerConfigurator,
+    private val registrationStore: GameServerRegistrationStore,
 ) {
     fun execute(command: Command): DemoConstructionReport {
+        if (registrationStore.findByGame("PALWORLD") != null) {
+            throw gameservermanager.web.error.GameServerAlreadyExistsException("PALWORLD")
+        }
         require(managedPathPolicy.isServerPathAllowed(command.installPath)) {
             "インストール先が管理範囲外です"
         }
@@ -31,6 +39,35 @@ class RunDemoServerConstruction(
             appId = PALWORLD_SERVER_APP_ID,
         )
         val installResult = steamCmdInstaller.install(installCommand)
+        demoServerConfigurator.configure(
+            DemoServerConfigurationCommand(
+                workspacePath = installResult.workspacePath,
+                serverName = command.serverName,
+                gamePort = command.gamePort,
+                rconPort = command.rconPort,
+                maxPlayers = command.maxPlayers,
+                serverPasswordConfigured = command.serverPassword.isNotBlank(),
+                adminPasswordConfigured = command.adminPassword.isNotBlank(),
+                automationEnabled = command.automationEnabled,
+                shutdownTime = command.shutdownTime,
+                startupTime = command.startupTime,
+                backupAfterShutdown = command.backupAfterShutdown,
+            ),
+        )
+        registrationStore.create(
+            GameServerRegistration(
+                game = "PALWORLD",
+                serverId = "palworld-main",
+                mode = "DEMO",
+                state = "STOPPED",
+                serverName = command.serverName,
+                installPath = command.installPath,
+                workspacePath = installResult.workspacePath,
+                gamePort = command.gamePort,
+                rconPort = command.rconPort,
+                createdAt = Clock.systemUTC().instant(),
+            ),
+        )
 
         val steps = listOf(
             completed("validate", "構築内容の検証", "管理ルートと入力内容を確認しました"),
@@ -41,6 +78,8 @@ class RunDemoServerConstruction(
                 "force_install_dir相当のデモ構成を作成しました",
             ),
             completed("data", "管理データの準備", "設定・ワールド・ログ用フォルダーを作成しました"),
+            completed("configuration", "Palworld設定の保存", "パスワードを伏せたデモ設定を保存しました"),
+            completed("automation", "自動運転設定の保存", "停止・バックアップ・起動設定をデモ保存しました"),
         )
 
         return DemoConstructionReport(
@@ -64,6 +103,10 @@ class RunDemoServerConstruction(
         val maxPlayers: Int,
         val serverPassword: String,
         val adminPassword: String,
+        val automationEnabled: Boolean,
+        val shutdownTime: String,
+        val startupTime: String,
+        val backupAfterShutdown: Boolean,
     )
 
     companion object {

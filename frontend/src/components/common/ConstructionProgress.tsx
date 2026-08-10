@@ -1,4 +1,4 @@
-import type { DemoConstructionReport } from '../types/serverConstruction'
+import type { DemoConstructionReport } from '../../types/serverOperations'
 
 type ConstructionProgressProps = {
   report: DemoConstructionReport
@@ -7,9 +7,9 @@ type ConstructionProgressProps = {
 export function ConstructionProgress({ report }: ConstructionProgressProps) {
   return (
     <section className="card">
-      <h2>デモ構築結果</h2>
+      <h2>デモサーバー作成結果</h2>
       <p className={report.completed ? 'summary pass' : 'summary error-status'}>
-        {report.completed ? 'デモ構築が完了しました' : 'デモ構築に失敗しました'}
+        {report.completed ? 'デモサーバーを作成しました' : 'デモサーバー作成に失敗しました'}
       </p>
       <ol className="step-list">
         {report.steps.map((step) => (

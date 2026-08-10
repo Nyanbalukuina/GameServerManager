@@ -1,12 +1,12 @@
 import type {
-  DemoConstructionReport,
   ServerConstructionPlan,
-  ServerPreflightReport,
-} from '../types/serverConstruction'
-import { ConstructionProgress } from './ConstructionProgress'
-import { PreflightResults } from './PreflightResults'
+} from '../../types/palworldConstruction'
+import type { DemoConstructionReport, ServerPreflightReport } from '../../types/serverOperations'
+import { ConstructionProgress } from '../common/ConstructionProgress'
+import { PreflightResults } from '../common/PreflightResults'
+import { AppLink } from '../common/AppLink'
 
-type ConstructionPlanProps = {
+type PalworldConstructionPlanProps = {
   plan: ServerConstructionPlan
   preflight: ServerPreflightReport | null
   preflightError: string | null
@@ -19,7 +19,7 @@ type ConstructionPlanProps = {
   onReturnToForm: () => void
 }
 
-export function ConstructionPlan({
+export function PalworldConstructionPlan({
   plan,
   preflight,
   preflightError,
@@ -30,7 +30,7 @@ export function ConstructionPlan({
   onCheckEnvironment,
   onRunDemoConstruction,
   onReturnToForm,
-}: ConstructionPlanProps) {
+}: PalworldConstructionPlanProps) {
   return (
     <>
       <header>
@@ -44,7 +44,7 @@ export function ConstructionPlan({
         <dl>
           <dt>ゲーム</dt>
           <dd>Palworld</dd>
-          <dt>インストール先</dt>
+          <dt>Palworldサーバーのインストール先</dt>
           <dd>{plan.installPath}</dd>
           <dt>SteamCMDの保存先</dt>
           <dd>{plan.steamCmdPath}</dd>
@@ -58,6 +58,16 @@ export function ConstructionPlan({
           <dd>{plan.serverPasswordConfigured ? '設定あり' : '設定なし'}</dd>
           <dt>管理者パスワード</dt>
           <dd>{plan.adminPasswordConfigured ? '設定あり' : '設定なし'}</dd>
+          <dt>自動運転</dt>
+          <dd>{plan.automationEnabled ? '有効' : '無効'}</dd>
+          <dt>毎日の停止時刻</dt>
+          <dd>{plan.shutdownTime}</dd>
+          <dt>毎日の起動時刻</dt>
+          <dd>{plan.startupTime}</dd>
+          <dt>停止後のバックアップ</dt>
+          <dd>{plan.backupAfterShutdown ? '有効' : '無効'}</dd>
+          <dt>バックアップ保持数</dt>
+          <dd>{plan.backupRetentionCount}個</dd>
         </dl>
       </section>
 
@@ -78,15 +88,15 @@ export function ConstructionPlan({
       </section>
 
       <section className="card">
-        <h2>デモ構築</h2>
-        <p>本物のSteamCMDやゲームは導入せず、一時領域に模擬ファイルを作成します。</p>
+        <h2>デモサーバー作成</h2>
+        <p>本物のSteamCMDやゲームは導入せず、一時領域にサーバー構成・Palworld設定・自動運転設定を作成します。</p>
         <button
           type="button"
           onClick={() => void onRunDemoConstruction()}
           disabled={!preflight || isConstructing}
           aria-busy={isConstructing}
         >
-          {isConstructing ? 'デモ構築中...' : 'デモ構築を実行'}
+          {isConstructing ? 'デモサーバー作成中...' : 'デモサーバーを作成'}
         </button>
         {!preflight && <p className="notice">先に事前検証を実行してください。</p>}
         {preflight && !preflight.canProceed && (
@@ -98,6 +108,9 @@ export function ConstructionPlan({
       </section>
 
       {constructionReport && <ConstructionProgress report={constructionReport} />}
+      {constructionReport?.completed && (
+        <AppLink className="management-link" href="/servers/palworld">Palworld管理画面を開く</AppLink>
+      )}
 
       <p className="notice">事前検証ではフォルダー作成や設定変更を行いません。</p>
       <button type="button" className="secondary" onClick={onReturnToForm}>

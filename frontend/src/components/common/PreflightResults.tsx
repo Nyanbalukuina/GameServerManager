@@ -1,7 +1,7 @@
 import type {
   PreflightStatus,
   ServerPreflightReport,
-} from '../types/serverConstruction'
+} from '../../types/serverOperations'
 
 type PreflightResultsProps = {
   report: ServerPreflightReport

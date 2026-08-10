@@ -9,4 +9,9 @@ data class ServerConstructionPlan(
     val maxPlayers: Int,
     val serverPasswordConfigured: Boolean,
     val adminPasswordConfigured: Boolean,
+    val automationEnabled: Boolean,
+    val shutdownTime: String,
+    val startupTime: String,
+    val backupAfterShutdown: Boolean,
+    val backupRetentionCount: Int,
 )

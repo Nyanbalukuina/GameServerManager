@@ -18,11 +18,13 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("org.springframework.security:spring-security-test")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
@@ -36,4 +38,25 @@ tasks.withType<Test> {
         "palworld.external.test",
         providers.gradleProperty("palworldExternalTest").getOrElse("false"),
     )
+}
+
+val frontendBuild by tasks.registering(Exec::class) {
+    workingDir(rootProject.file("../frontend"))
+    commandLine("npm.cmd", "run", "build")
+}
+
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    dependsOn(frontendBuild)
+    from(rootProject.file("../frontend/dist")) {
+        into("BOOT-INF/classes/static")
+    }
+}
+
+tasks.register<Sync>("windowsDistribution") {
+    dependsOn(tasks.bootJar)
+    into(layout.buildDirectory.dir("distributions/windows"))
+    from(tasks.bootJar.flatMap { it.archiveFile }) {
+        rename { "game-server-manager.jar" }
+    }
+    from(rootProject.file("../windows/GameServerManager.WindowsSetup.ps1"))
 }

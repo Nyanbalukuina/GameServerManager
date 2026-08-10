@@ -8,6 +8,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice
 
 @RestControllerAdvice
 class ApiExceptionHandler {
+    @ExceptionHandler(GameServerAlreadyExistsException::class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    fun handleAlreadyExists(exception: GameServerAlreadyExistsException): ApiValidationError {
+        return ApiValidationError(mapOf("request" to "${exception.game}サーバーは既に作成されています"))
+    }
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleValidation(exception: MethodArgumentNotValidException): ApiValidationError {
@@ -29,6 +34,10 @@ class ApiExceptionHandler {
         return ApiValidationError(mapOf("request" to (exception.message ?: "入力内容を確認してください")))
     }
 }
+
+class GameServerAlreadyExistsException(
+    val game: String,
+) : RuntimeException()
 
 class InvalidConstructionPlanException(
     val errors: Map<String, String>,

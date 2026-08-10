@@ -32,6 +32,7 @@ class BackupPalworldServer(
         val backupDirectory = Path.of(managedPathPolicy.managedRoot())
             .resolve("backups/palworld-main/world")
         val result = backupCreator.create(savedPath, backupDirectory)
+        deleteOldBackups(backupDirectory)
         historyStore.append(
             PalworldOperationHistoryEntry(
                 Clock.systemUTC().instant(),
@@ -52,4 +53,18 @@ class BackupPalworldServer(
     data class Command(
         val installPath: String,
     )
+
+    private fun deleteOldBackups(backupDirectory: Path) {
+        Files.list(backupDirectory).use { paths ->
+            paths
+                .filter { Files.isRegularFile(it) && it.fileName.toString().endsWith(".zip") }
+                .sorted(Comparator.comparing<Path, String> { it.fileName.toString() }.reversed())
+                .skip(MAX_BACKUPS.toLong())
+                .forEach { Files.deleteIfExists(it) }
+        }
+    }
+
+    companion object {
+        private const val MAX_BACKUPS = 3
+    }
 }

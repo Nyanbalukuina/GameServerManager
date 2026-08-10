@@ -2,23 +2,24 @@ import type { FormEvent } from 'react'
 import type {
   NewServerRequest,
   ValidationErrors,
-} from '../types/serverConstruction'
+} from '../../types/palworldConstruction'
+import { FormField } from '../common/FormField'
 
-type ServerConstructionFormProps = {
+type PalworldConstructionFormProps = {
   form: NewServerRequest
   errors: ValidationErrors
   isSubmitting: boolean
-  onFieldChange: (field: keyof NewServerRequest, value: string) => void
+  onFieldChange: (field: keyof NewServerRequest, value: string | boolean) => void
   onSubmit: () => Promise<void>
 }
 
-export function ServerConstructionForm({
+export function PalworldConstructionForm({
   form,
   errors,
   isSubmitting,
   onFieldChange,
   onSubmit,
-}: ServerConstructionFormProps) {
+}: PalworldConstructionFormProps) {
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     void onSubmit()
@@ -35,21 +36,21 @@ export function ServerConstructionForm({
       <form onSubmit={submit}>
         <section className="card form-section">
           <h2>基本設定</h2>
-          <Field
+          <FormField
             id="serverName"
             label="サーバー名"
             value={form.serverName}
             error={errors.serverName}
             onChange={(value) => onFieldChange('serverName', value)}
           />
-          <Field
+          <FormField
             id="installPath"
-            label="インストール先"
+            label="Palworldサーバーのインストール先"
             value={form.installPath}
             error={errors.installPath}
             onChange={(value) => onFieldChange('installPath', value)}
           />
-          <Field
+          <FormField
             id="steamCmdPath"
             label="SteamCMDの保存先"
             value={form.steamCmdPath}
@@ -60,7 +61,7 @@ export function ServerConstructionForm({
 
         <section className="card form-section">
           <h2>接続設定</h2>
-          <Field
+          <FormField
             id="gamePort"
             label="ゲームポート"
             type="number"
@@ -68,7 +69,7 @@ export function ServerConstructionForm({
             error={errors.gamePort}
             onChange={(value) => onFieldChange('gamePort', value)}
           />
-          <Field
+          <FormField
             id="rconPort"
             label="RCONポート"
             type="number"
@@ -76,7 +77,7 @@ export function ServerConstructionForm({
             error={errors.rconPort}
             onChange={(value) => onFieldChange('rconPort', value)}
           />
-          <Field
+          <FormField
             id="maxPlayers"
             label="最大プレイヤー数"
             type="number"
@@ -88,7 +89,7 @@ export function ServerConstructionForm({
 
         <section className="card form-section">
           <h2>パスワード</h2>
-          <Field
+          <FormField
             id="serverPassword"
             label="サーバーパスワード（任意）"
             type="password"
@@ -96,7 +97,7 @@ export function ServerConstructionForm({
             error={errors.serverPassword}
             onChange={(value) => onFieldChange('serverPassword', value)}
           />
-          <Field
+          <FormField
             id="adminPassword"
             label="管理者パスワード"
             type="password"
@@ -106,47 +107,48 @@ export function ServerConstructionForm({
           />
         </section>
 
+        <section className="card form-section">
+          <h2>自動運転</h2>
+          <label className="automation-toggle">
+            <input
+              type="checkbox"
+              checked={form.automationEnabled}
+              onChange={(event) => onFieldChange('automationEnabled', event.target.checked)}
+            />
+            自動運転を有効にする
+          </label>
+          <label htmlFor="shutdownTime">毎日の停止時刻</label>
+          <input
+            id="shutdownTime"
+            type="time"
+            value={form.shutdownTime}
+            onChange={(event) => onFieldChange('shutdownTime', event.target.value)}
+          />
+          <p className="error">{errors.shutdownTime}</p>
+          <label htmlFor="startupTime">毎日の起動時刻</label>
+          <input
+            id="startupTime"
+            type="time"
+            value={form.startupTime}
+            onChange={(event) => onFieldChange('startupTime', event.target.value)}
+          />
+          <p className="error">{errors.startupTime}</p>
+          <label className="automation-toggle">
+            <input
+              type="checkbox"
+              checked={form.backupAfterShutdown}
+              onChange={(event) => onFieldChange('backupAfterShutdown', event.target.checked)}
+            />
+            停止後にバックアップする
+          </label>
+          <p className="notice">バックアップは最新3個を保持し、古いものから自動削除します。</p>
+        </section>
+
         {errors.request && <p className="error request-error">{errors.request}</p>}
         <button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
           {isSubmitting ? '確認中...' : '構築計画を確認'}
         </button>
       </form>
     </>
-  )
-}
-
-type FieldProps = {
-  id: string
-  label: string
-  value: string
-  error?: string
-  type?: 'text' | 'number' | 'password'
-  onChange: (value: string) => void
-}
-
-function Field({
-  id,
-  label,
-  value,
-  error,
-  type = 'text',
-  onChange,
-}: FieldProps) {
-  return (
-    <div className="field">
-      <label htmlFor={id}>{label}</label>
-      <input
-        id={id}
-        type={type}
-        value={value}
-        autoComplete={type === 'password' ? 'new-password' : undefined}
-        aria-invalid={Boolean(error)}
-        aria-describedby={error ? `${id}-error` : undefined}
-        onChange={(event) => onChange(event.target.value)}
-      />
-      <p id={`${id}-error`} className="error">
-        {error}
-      </p>
-    </div>
   )
 }

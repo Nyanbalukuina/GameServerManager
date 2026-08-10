@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
+import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
 
 data class NewServerRequest(
@@ -40,4 +41,14 @@ data class NewServerRequest(
     @field:NotBlank(message = "管理者パスワードを入力してください")
     @field:Size(min = 8, max = 64, message = "管理者パスワードは8文字以上64文字以内で入力してください")
     val adminPassword: String = "",
+
+    val automationEnabled: Boolean = false,
+
+    @field:Pattern(regexp = "(?:[01]\\d|2[0-3]):[0-5]\\d", message = "停止時刻をHH:mm形式で入力してください")
+    val shutdownTime: String = "04:00",
+
+    @field:Pattern(regexp = "(?:[01]\\d|2[0-3]):[0-5]\\d", message = "起動時刻をHH:mm形式で入力してください")
+    val startupTime: String = "09:00",
+
+    val backupAfterShutdown: Boolean = true,
 )

@@ -18,6 +18,10 @@ class CreateServerConstructionPlanTests {
                 maxPlayers = 3,
                 serverPassword = "",
                 adminPassword = "admin-password",
+                automationEnabled = true,
+                shutdownTime = "04:00",
+                startupTime = "09:00",
+                backupAfterShutdown = true,
             ),
         )
 
@@ -26,5 +30,9 @@ class CreateServerConstructionPlanTests {
         assertThat(plan.steamCmdPath).isEqualTo("C:\\GameServers\\SteamCMD")
         assertThat(plan.serverPasswordConfigured).isFalse()
         assertThat(plan.adminPasswordConfigured).isTrue()
+        assertThat(plan.automationEnabled).isTrue()
+        assertThat(plan.shutdownTime).isEqualTo("04:00")
+        assertThat(plan.startupTime).isEqualTo("09:00")
+        assertThat(plan.backupRetentionCount).isEqualTo(3)
     }
 }

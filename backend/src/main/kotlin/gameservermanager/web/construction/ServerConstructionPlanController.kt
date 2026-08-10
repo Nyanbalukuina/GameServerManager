@@ -32,6 +32,10 @@ class ServerConstructionPlanController(
                 maxPlayers = requireNotNull(request.maxPlayers),
                 serverPassword = request.serverPassword,
                 adminPassword = request.adminPassword,
+                automationEnabled = request.automationEnabled,
+                shutdownTime = request.shutdownTime,
+                startupTime = request.startupTime,
+                backupAfterShutdown = request.backupAfterShutdown,
             ),
         )
     }

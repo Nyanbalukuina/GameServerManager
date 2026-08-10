@@ -273,3 +273,32 @@ dd {
     margin-bottom: 12px;
   }
 }
+.automation-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.automation-toggle input {
+  width: auto;
+}
+
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.management-link {
+  display: inline-block;
+  margin-top: 24px;
+  color: #93c5fd;
+}
+
+.danger-zone {
+  border-color: #991b1b;
+}
+
+.danger-zone button {
+  background: #b91c1c;
+}

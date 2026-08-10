@@ -5,12 +5,14 @@ import gameservermanager.web.error.ApiExceptionHandler
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.context.annotation.Import
 import org.springframework.http.MediaType
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.post
 
 @WebMvcTest(ServerConstructionPlanController::class)
+@AutoConfigureMockMvc(addFilters = false)
 @Import(CreateServerConstructionPlan::class, ApiExceptionHandler::class)
 class ServerConstructionPlanControllerTests @Autowired constructor(
     private val mockMvc: MockMvc,
@@ -27,6 +29,11 @@ class ServerConstructionPlanControllerTests @Autowired constructor(
             jsonPath("$.rconPort") { value(25575) }
             jsonPath("$.serverPasswordConfigured") { value(false) }
             jsonPath("$.adminPasswordConfigured") { value(true) }
+            jsonPath("$.automationEnabled") { value(true) }
+            jsonPath("$.shutdownTime") { value("04:00") }
+            jsonPath("$.startupTime") { value("09:00") }
+            jsonPath("$.backupAfterShutdown") { value(true) }
+            jsonPath("$.backupRetentionCount") { value(3) }
             jsonPath("$.adminPassword") { doesNotExist() }
         }
     }
@@ -79,7 +86,11 @@ class ServerConstructionPlanControllerTests @Autowired constructor(
               "rconPort": 25575,
               "maxPlayers": 3,
               "serverPassword": "",
-              "adminPassword": "admin-password"
+              "adminPassword": "admin-password",
+              "automationEnabled": true,
+              "shutdownTime": "04:00",
+              "startupTime": "09:00",
+              "backupAfterShutdown": true
             }
         """.trimIndent()
     }

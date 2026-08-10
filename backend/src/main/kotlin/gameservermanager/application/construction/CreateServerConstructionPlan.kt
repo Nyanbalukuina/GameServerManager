@@ -6,6 +6,9 @@ import org.springframework.stereotype.Service
 @Service
 class CreateServerConstructionPlan {
     fun execute(command: Command): ServerConstructionPlan {
+        require(!command.automationEnabled || command.shutdownTime != command.startupTime) {
+            "停止時刻と起動時刻は別の時刻を指定してください"
+        }
         return ServerConstructionPlan(
             serverName = command.serverName.trim(),
             installPath = command.installPath.trim(),
@@ -15,6 +18,11 @@ class CreateServerConstructionPlan {
             maxPlayers = command.maxPlayers,
             serverPasswordConfigured = command.serverPassword.isNotBlank(),
             adminPasswordConfigured = command.adminPassword.isNotBlank(),
+            automationEnabled = command.automationEnabled,
+            shutdownTime = command.shutdownTime,
+            startupTime = command.startupTime,
+            backupAfterShutdown = command.backupAfterShutdown,
+            backupRetentionCount = 3,
         )
     }
 
@@ -27,5 +35,9 @@ class CreateServerConstructionPlan {
         val maxPlayers: Int,
         val serverPassword: String,
         val adminPassword: String,
+        val automationEnabled: Boolean,
+        val shutdownTime: String,
+        val startupTime: String,
+        val backupAfterShutdown: Boolean,
     )
 }

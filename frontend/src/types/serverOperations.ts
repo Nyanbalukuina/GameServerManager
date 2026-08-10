@@ -1,25 +1,3 @@
-export type NewServerRequest = {
-  serverName: string
-  installPath: string
-  steamCmdPath: string
-  gamePort: string
-  rconPort: string
-  maxPlayers: string
-  serverPassword: string
-  adminPassword: string
-}
-
-export type ServerConstructionPlan = {
-  serverName: string
-  installPath: string
-  steamCmdPath: string
-  gamePort: number
-  rconPort: number
-  maxPlayers: number
-  serverPasswordConfigured: boolean
-  adminPasswordConfigured: boolean
-}
-
 export type PreflightStatus = 'PASS' | 'WARNING' | 'ERROR'
 
 export type PreflightCheck = {
@@ -49,5 +27,3 @@ export type DemoConstructionReport = {
   workspacePath: string
   steps: ConstructionStep[]
 }
-
-export type ValidationErrors = Partial<Record<keyof NewServerRequest | 'request', string>>

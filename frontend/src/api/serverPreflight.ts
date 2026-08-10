@@ -1,7 +1,6 @@
-import type {
-  ServerConstructionPlan,
-  ServerPreflightReport,
-} from '../types/serverConstruction'
+import type { ServerConstructionPlan } from '../types/palworldConstruction'
+import type { ServerPreflightReport } from '../types/serverOperations'
+import { apiFetch } from './http'
 
 type PreflightResult =
   | { ok: true; report: ServerPreflightReport }
@@ -11,7 +10,7 @@ export async function runServerPreflight(
   plan: ServerConstructionPlan,
 ): Promise<PreflightResult> {
   try {
-    const response = await fetch('/api/server-construction-preflight', {
+    const response = await apiFetch('/api/server-construction-preflight', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

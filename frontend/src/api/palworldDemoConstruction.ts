@@ -1,18 +1,16 @@
-import type {
-  NewServerRequest,
-  ServerConstructionPlan,
-  ValidationErrors,
-} from '../types/serverConstruction'
+import type { NewServerRequest, ValidationErrors } from '../types/palworldConstruction'
+import type { DemoConstructionReport } from '../types/serverOperations'
+import { apiFetch } from './http'
 
-type CreatePlanResult =
-  | { ok: true; plan: ServerConstructionPlan }
+type DemoConstructionResult =
+  | { ok: true; report: DemoConstructionReport }
   | { ok: false; errors: ValidationErrors }
 
-export async function createServerConstructionPlan(
+export async function runDemoServerConstruction(
   request: NewServerRequest,
-): Promise<CreatePlanResult> {
+): Promise<DemoConstructionResult> {
   try {
-    const response = await fetch('/api/server-construction-plans', {
+    const response = await apiFetch('/api/server-constructions/demo', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -24,16 +22,16 @@ export async function createServerConstructionPlan(
     })
 
     if (response.ok) {
-      return { ok: true, plan: await response.json() }
+      return { ok: true, report: await response.json() }
     }
 
-    if (response.status === 400) {
+    if (response.status === 400 || response.status === 409) {
       return { ok: false, errors: (await response.json()).errors }
     }
 
     return {
       ok: false,
-      errors: { request: 'サーバーとの通信に失敗しました' },
+      errors: { request: 'デモ構築を実行できませんでした' },
     }
   } catch {
     return {

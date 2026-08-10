@@ -2,251 +2,168 @@
 
 ## 目的
 
-コマンド操作が苦手な人でも、ブラウザからゲーム専用サーバーを安全に管理できるOSSを作る。
+GameServerManagerは、コマンド操作に不慣れな利用者でも、ブラウザから自宅のゲーム専用サーバーを安全に構築・運用できるようにするOSSである。
 
-主な利用場面は、自宅のWindowsまたはLinuxマシンで稼働するPalworldやARKなどの管理とする。
+初期版は、1台のWindowsマシンへPalworld Dedicated Serverを新規構築し、同じマシンまたは同一ネットワーク内の別端末から管理することを目標とする。
 
-## 基本方針
+## 初期版の範囲
 
-- ブラウザからサーバーを起動・停止・再起動する
-- SteamCMDによるインストールと更新を行う
-- 稼働状態、接続人数、ログを確認する
-- セーブデータをバックアップ・復元する
-- 定刻起動、自動停止、更新予約に対応する
-- 任意のコマンド実行機能は設けず、安全な操作だけを提供する
-- 最初は単一のWindowsマシンに対応し、後からLinuxや複数マシンへ拡張する
+- Windowsネイティブ環境
+- 単一管理者
+- 1タイトルにつき1サーバー
+- Palworldの新規構築と管理
+- 起動、停止、再起動、更新、バックアップ
+- 毎日の停止、バックアップ、指定時刻起動
+- LANまたは任意のVPN経由のブラウザ操作
+- Windows FirewallとWindows起動時タスクの限定的な設定
+
+ARK、Minecraft、Linux、Docker、複数マシン、複数ユーザー、既存サーバー取り込みは初期版の後に対応する。
 
 ## 想定構成
 
 ```text
-iPhone・PCのブラウザ
-        │
-        │ Tailscale
-        ▼
-ゲームサーバーPC
-├─ ゲームサーバー管理OSS
-├─ Palworld Dedicated Server
-└─ ARK Dedicated Server
+管理用PC・スマートフォンのブラウザ
+              │
+              │ LANまたは任意のVPN
+              ▼
+WindowsゲームサーバーPC
+├─ GameServerManager
+├─ SteamCMD
+└─ Palworld Dedicated Server
 ```
 
-管理OSSはゲームサーバーと同じマシンで動かし、ローカルのPowerShell、SteamCMD、RCONなどを利用する。
+GameServerManagerはゲームサーバーと同じマシンで動作し、ローカルのファイル、プロセス、SteamCMD、Palworld REST APIを操作する。別マシンの管理者パスワードやSSH接続情報は保存しない。
 
-この構成ではSSH、WinRM、リモート管理者パスワードなどを管理OSSに保存する必要がない。
+## ネットワークと認証
 
-## 接続方法
+GameServerManagerはTailscaleを含む特定のVPN製品へ依存しない。LANでは`192.168.x.x:8080`、Tailscaleを利用する場合は`100.x.x.x:8080`のように、到達可能なサーバーPCのアドレスへ接続する。
 
-管理画面にはTailscale経由で接続する。
+既定では`127.0.0.1:8080`だけで待ち受ける。LANやVPNから操作するときだけ`GAME_SERVER_MANAGER_ADDRESS=0.0.0.0`を設定する。管理ポートをルーターのポート転送などで一般インターネットへ直接公開しない。
+
+管理画面はSpring Securityで保護する。
+
+- 管理者名は`admin`固定
+- 初回設定はlocalhostからだけ許可
+- パスワードはbcryptハッシュで保存
+- CookieセッションとCSRF対策を使用
+- 認証ファイルを削除した場合も、再設定はlocalhostからだけ許可
+
+Tailscaleの導入、Tailnet参加、アクセス制御は利用者が行う。VPNを利用していてもGameServerManagerのログイン認証は無効にしない。
+
+## 技術構成
+
+| 分類 | 採用技術 |
+|---|---|
+| バックエンド | Kotlin、Spring Boot、Java 21 |
+| フロントエンド | React、TypeScript、Vite |
+| 認証 | Spring Security |
+| 永続化 | JSON、JSON Lines、ゲーム固有設定ファイル |
+| Windows連携 | PowerShell、Windows Firewall、タスクスケジューラ |
+| ゲーム導入・更新 | SteamCMD |
+| Palworld管理 | ローカルREST API、プロセス管理 |
+| テスト | JUnit 5、MockMvc、Vitest、Testing Library |
+
+初期版ではSQLiteを導入しない。単一マシン・単一管理者・1タイトル1サーバーの規模では、管理ルート内のファイルで必要な状態を管理できるためである。複数ユーザー、権限管理、複雑な検索などが必要になった時点でDB導入を再検討する。
+
+## データ配置
 
 ```text
-http://Tailscale-IP:8080
+C:\GameServerManager\
+├─ app\
+├─ tools\
+│  └─ steamcmd\
+├─ servers\
+│  └─ palworld\
+│     └─ main\
+│        └─ runtime\
+├─ backups\
+├─ logs\
+└─ config\
 ```
 
-例：
+- SteamCMDは`tools`へ配置する
+- `force_install_dir`でゲーム本体を`servers`へ配置する
+- ワールド、ゲーム設定、ゲームログはゲーム本体配下で管理する
+- バックアップはゲーム本体の外にある`backups`へ保存する
+- 認証、登録サーバー、自動運転状態は`config`へ保存する
+- 操作履歴は`logs`へ保存する
+- FirewallやタスクスケジューラはOS側の設定として扱う
+
+既に別の場所へSteamCMDが存在していても競合させず、GameServerManagerは自身の管理ルート内に専用のSteamCMDを準備して使用する。
+
+## Palworldの構築と管理
+
+新規構築は次の単位に分けて実行する。
 
 ```text
-http://100.x.x.x:8080
+入力
+→ 構築計画の確認
+→ パス・容量・ポートの事前検証
+→ SteamCMDの準備
+→ Palworldのインストール
+→ 初期設定の生成
+→ 起動確認
+→ 管理対象への登録
 ```
 
-基本的なセキュリティ方針は以下とする。
+管理対象へ登録した後は、状態確認、起動、保存後停止、再起動、更新、手動バックアップ、操作履歴を扱う。Palworldの保存と正常停止には、外部公開しないローカルREST APIを使用する。
 
-- ルーターのポート開放は行わない
-- Spring BootはTailscaleのIPアドレスで待ち受ける
-- WindowsファイアウォールはTailscale経由の通信だけを許可する
-- Tailscaleを利用していても、管理画面のログイン認証は残す
-- 将来的にはTailscale ServeによるHTTPS化も検討する
+初期版は1タイトルにつき1サーバーとし、Palworldを登録した後は2件目を作成できない。ARKやMinecraftの対応後は、各タイトルをそれぞれ1件ずつ登録できるようにする。
 
-Spring Bootの設定例：
+## 自動運転
 
-```yaml
-server:
-  address: 100.x.x.x
-  port: 8080
-```
-
-## 対応ゲーム
-
-### Palworld
-
-- サーバーの起動・停止
-- SteamCMDによる更新
-- 設定ファイルの編集
-- セーブデータのバックアップ・復元
-- RCONによる告知や安全な停止
-
-### ARK
-
-- マップやポートの設定
-- SteamCMDによる更新
-- RCONによる告知、ワールド保存、停止
-- `ShooterGame/Saved`のバックアップ・復元
-- MODと設定ファイルの管理
-
-ARKには次の違いがある。
-
-- ARK: Survival EvolvedはWindowsとLinuxの専用サーバーに対応
-- ARK: Survival AscendedはWindowsでの運用を基本とする
-- ARK: Survival AscendedはPalworldよりメモリ消費が多い
-
-更新時には以下の処理を一連の操作として実行する。
+利用者はPalworld新規作成時に、毎日の停止時刻と起動時刻を設定できる。標準的な運用は次のとおりである。
 
 ```text
-プレイヤーへ停止予告
+停止時刻
 → ワールド保存
 → サーバー停止
 → バックアップ
-→ SteamCMDで更新
-→ 再起動
-→ 起動確認
+→ 起動時刻まで待機
+→ サーバー起動
 ```
 
-## 技術スタック
+バックアップはサーバー停止中に取得し、最新3個を保持する。手動で停止されたサーバーは勝手に起動せず、自動運転が停止した場合だけ指定時刻に起動する。
 
-| 分類 | 採用候補 |
-|---|---|
-| バックエンド | Kotlin + Spring Boot |
-| Web画面 | Thymeleaf + HTMX |
-| 認証・認可 | Spring Security |
-| DB | SQLite |
-| DB操作 | Spring JDBCまたはExposed |
-| DBマイグレーション | Flyway |
-| Windows操作 | PowerShell、Windowsサービス |
-| Linux操作 | systemd、シェル |
-| ゲーム連携 | SteamCMD、RCON |
-| 初期の配布形式 | 単体JARと設定ファイル |
+## Windows連携
 
-Reactなどの独立したフロントエンドを最初から設けず、Spring Boot内で画面も生成する。これにより、開発構成と配布物を小さく保つ。
+Windows連携は、通常のWebアプリから任意の管理者コマンドを実行する設計にしない。配布用PowerShellは`Plan`、`Install`、`Status`、`Uninstall`の限定された操作だけを提供する。
 
-## データ管理
+- GameServerManager導入時に管理画面用TCPポートを許可する
+- Windows起動時に制限付きユーザーでGameServerManagerを起動する
+- 実ゲームサーバー作成時にゲーム用UDPポートを許可する
+- 実ゲームサーバー削除時に、そのサーバー用として作成した規則だけを解除する
+- RCONポートとPalworld REST APIポートは外部へ公開しない
+- デモ操作ではFirewallやタスクスケジューラを変更しない
 
-DBサーバーは用意せず、SQLiteを1ファイルで使用する。
+配布物とセットアップヘルパーは実装済みであり、開発PCでFirewall規則、起動タスク、実行可能JARの起動を確認済みである。実ゲームサーバーの作成・削除とのFirewall連動は今後接続する。
 
-SQLiteに保存する情報：
+## デモ開発
 
-- ユーザー
-- パスワードハッシュ
-- 管理者・閲覧者などの権限
-- 登録されたゲームサーバー
-- ゲームごとの設定
-- スケジュール
-- 操作履歴
+SteamCMDやゲームを導入できない開発PCでも、`%TEMP%\GameServerManagerDemo`へ模擬構成を作成して画面と管理フローを確認できる。
 
-セーブデータやログ本体はDBへ格納せず、ファイルシステムで管理する。
+デモでは実プロセスやOS設定を変更せず、起動、停止、再起動の状態遷移を模擬する。デモデータは自動削除されないため、管理画面から明示的に削除する。
 
-```text
-data/
-├─ app.db
-├─ backups/
-├─ logs/
-└─ config/
-```
+## 現在地と今後
 
-パスワードやトークンは平文の設定ファイルへ保存しない。
+実装済み：
 
-- WindowsではCredential ManagerまたはDPAPIを利用する
-- Linuxではアクセス権を制限した秘密情報ファイルを利用する
-- DockerではSecretsまたは環境変数を利用する
+- 構築フォーム、計画確認、事前検証
+- デモ作成、デモ管理、デモ削除
+- 初回管理者設定、ログイン、ログアウト、CSRF保護
+- 1タイトル1サーバーのJSON登録
+- SteamCMD準備とPalworldの構築・管理に必要なバックエンド処理
+- 自動停止、停止後バックアップ、3世代保持、自動起動
+- Windows配布物、Firewall・自動起動セットアップヘルパー
 
-初期版では、秘密情報を保存しなくて済むローカル実行方式を優先する。
+次に実装・確認する内容：
 
-## OSと実行方式
+1. 画面から実Palworldサーバーを一括作成するフロー
+2. 作成・削除に連動するゲーム用Firewall規則
+3. 実サーバーマシンでのSteamCMD、Palworld、REST API、自動運転の確認
+4. Windows設定を確認・制御する管理画面
+5. バックアップ復元
+6. ARK、Minecraft対応
+7. 既存ゲームサーバーの取り込み
 
-Linuxのゲームサーバーは、必ずしもDockerで動かす必要はない。WindowsとLinuxのどちらでも、ネイティブ実行とDocker実行を別の方式として扱う。
-
-```text
-ゲーム
-├─ Palworld
-└─ ARK
-
-実行方式
-├─ Windowsネイティブ
-├─ Linuxネイティブ
-└─ Docker
-```
-
-各方式で利用する操作：
-
-- Windowsネイティブ：PowerShellまたはWindowsサービス
-- Linuxネイティブ：systemdまたはシェル
-- Docker：Docker Compose
-
-WindowsのPowerShellからDockerを操作することにも意味がある。PowerShellは操作窓口であり、ゲームサーバーはDocker DesktopとWSL2上のLinuxコンテナで動作する。
-
-ただし、初期版はDockerを必須にしない。Windows専用サーバーや保存先、ポート設定を考慮し、まずWindowsネイティブ版を完成させる。
-
-## 拡張可能な設計
-
-ゲーム固有処理とOS固有処理を分離する。
-
-```text
-管理画面・共通処理
-├─ ゲームアダプター
-│  ├─ Palworld
-│  └─ ARK
-└─ 実行アダプター
-   ├─ Windows
-   ├─ Linux
-   └─ Docker
-```
-
-共通処理：
-
-- 起動・停止・再起動
-- 状態確認
-- 更新
-- バックアップ
-- スケジュール
-- 通知
-- 操作履歴
-
-ゲーム固有処理：
-
-- Steam App ID
-- 実行ファイルと起動引数
-- セーブデータの保存場所
-- 設定ファイル
-- RCONコマンド
-- 正常起動の判定方法
-
-OS固有処理：
-
-- プロセスまたはサービスの操作
-- コマンド実行
-- ファイルパス
-- 権限管理
-
-## 複数マシン対応
-
-将来的には各サーバーマシンへ小さな管理エージェントを導入する。
-
-```text
-中央管理画面
-├─ Windows管理エージェント
-└─ Linux管理エージェント
-```
-
-エージェント側から中央管理画面へ接続する方式とし、利用者がSSH接続文字列や管理者パスワードを登録する構成を避ける。
-
-初回登録用トークンでマシンを登録し、その後はマシン固有の鍵または証明書で認証する。
-
-## 開発順
-
-1. 単一ユーザー・単一Windowsマシン対応
-2. SQLiteとSpring Securityによる認証
-3. Palworldの起動・停止・更新・バックアップ
-4. ARK対応
-5. 権限管理と操作履歴
-6. Linuxネイティブ対応
-7. Docker対応
-8. 複数マシン用エージェント
-
-## 初期版の完成条件
-
-- Windowsマシンへ簡単に導入できる
-- Tailscale経由で管理画面へ接続できる
-- ログイン認証が機能する
-- Palworldを安全に起動・停止・更新できる
-- セーブデータをバックアップ・復元できる
-- 操作結果とエラーをブラウザで確認できる
-- 任意コマンドを実行できない
-
-最初の目標は「1台へ導入すれば、コマンドを使わずブラウザからゲームサーバーを管理できるOSS」とする。
+最初の完成目標は「1台へ導入すれば、任意コマンドを公開せず、ブラウザからPalworldサーバーを構築・運用できるOSS」とする。
