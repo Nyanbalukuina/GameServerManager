@@ -49,6 +49,26 @@ GameServerManager/
 
 フロントエンドは`App.tsx`をルーティングの入口とし、`pages`、`components`、`api`、`types`、`styles`の役割単位で整理します。
 
+## 管理データ
+
+既定の管理ルートは`C:\GameServerManager`です。
+
+```text
+C:\GameServerManager\
+├─ tools\
+│  └─ steamcmd\
+├─ servers\
+│  └─ palworld\
+│     └─ main\
+│        └─ runtime\
+├─ backups\
+└─ logs\
+```
+
+ゲーム本体は`servers`、SteamCMDなどの共用ツールは`tools`配下だけを許可します。ワールド・設定・ゲームログはゲーム本体配下、バックアップは`backups`へ分離します。
+
+現在は実SteamCMDを起動せず、OSの一時領域へ同じ構成の小さな模擬ファイルを作るデモ構築に対応しています。
+
 ## 開発時の起動
 
 ターミナル1でバックエンドを起動します。

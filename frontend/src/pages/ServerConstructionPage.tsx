@@ -1,11 +1,13 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { runDemoServerConstruction } from '../api/demoServerConstruction'
 import { runServerPreflight } from '../api/serverPreflight'
 import { createServerConstructionPlan } from '../api/serverConstructionPlans'
+import { AppLink } from '../components/AppLink'
 import { ConstructionPlan } from '../components/ConstructionPlan'
 import { ServerConstructionForm } from '../components/ServerConstructionForm'
 import type {
   NewServerRequest,
+  DemoConstructionReport,
   ServerConstructionPlan as ServerConstructionPlanType,
   ServerPreflightReport,
   ValidationErrors,
@@ -14,8 +16,8 @@ import '../styles/serverConstruction.css'
 
 const initialForm: NewServerRequest = {
   serverName: '',
-  installPath: 'C:\\GameServers\\Palworld',
-  steamCmdPath: 'C:\\GameServers\\SteamCMD',
+  installPath: 'C:\\GameServerManager\\servers\\palworld\\main\\runtime',
+  steamCmdPath: 'C:\\GameServerManager\\tools\\steamcmd',
   gamePort: '8211',
   rconPort: '25575',
   maxPlayers: '3',
@@ -31,6 +33,9 @@ export function ServerConstructionPage() {
   const [errors, setErrors] = useState<ValidationErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isChecking, setIsChecking] = useState(false)
+  const [isConstructing, setIsConstructing] = useState(false)
+  const [constructionReport, setConstructionReport] = useState<DemoConstructionReport | null>(null)
+  const [constructionError, setConstructionError] = useState<string | null>(null)
 
   const updateField = (field: keyof NewServerRequest, value: string) => {
     setForm((current) => ({ ...current, [field]: value }))
@@ -44,11 +49,6 @@ export function ServerConstructionPage() {
     const result = await createServerConstructionPlan(form)
     if (result.ok) {
       setPlan(result.plan)
-      setForm((current) => ({
-        ...current,
-        serverPassword: '',
-        adminPassword: '',
-      }))
     } else {
       setErrors(result.errors)
     }
@@ -63,6 +63,8 @@ export function ServerConstructionPage() {
 
     setIsChecking(true)
     setPreflightError(null)
+    setConstructionReport(null)
+    setConstructionError(null)
     const result = await runServerPreflight(plan)
     if (result.ok) {
       setPreflight(result.report)
@@ -72,17 +74,38 @@ export function ServerConstructionPage() {
     setIsChecking(false)
   }
 
+  const runDemoConstruction = async () => {
+    setIsConstructing(true)
+    setConstructionError(null)
+
+    const result = await runDemoServerConstruction(form)
+    if (result.ok) {
+      setConstructionReport(result.report)
+      setForm((current) => ({
+        ...current,
+        serverPassword: '',
+        adminPassword: '',
+      }))
+    } else {
+      setConstructionError(result.errors.request ?? 'デモ構築を実行できませんでした')
+    }
+
+    setIsConstructing(false)
+  }
+
   const returnToForm = () => {
     setPlan(null)
     setPreflight(null)
     setPreflightError(null)
+    setConstructionReport(null)
+    setConstructionError(null)
   }
 
   return (
     <main>
-      <Link className="back-link" to="/servers/new">
+      <AppLink className="back-link" href="/servers/new">
         ゲーム選択へ戻る
-      </Link>
+      </AppLink>
 
       {plan ? (
         <ConstructionPlan
@@ -90,7 +113,11 @@ export function ServerConstructionPage() {
           preflight={preflight}
           preflightError={preflightError}
           isChecking={isChecking}
+          isConstructing={isConstructing}
+          constructionReport={constructionReport}
+          constructionError={constructionError}
           onCheckEnvironment={checkEnvironment}
+          onRunDemoConstruction={runDemoConstruction}
           onReturnToForm={returnToForm}
         />
       ) : (

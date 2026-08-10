@@ -34,4 +34,20 @@ export type ServerPreflightReport = {
   checks: PreflightCheck[]
 }
 
+export type ConstructionStepStatus = 'COMPLETED' | 'ERROR'
+
+export type ConstructionStep = {
+  id: string
+  label: string
+  status: ConstructionStepStatus
+  message: string
+}
+
+export type DemoConstructionReport = {
+  completed: boolean
+  mode: 'DEMO'
+  workspacePath: string
+  steps: ConstructionStep[]
+}
+
 export type ValidationErrors = Partial<Record<keyof NewServerRequest | 'request', string>>

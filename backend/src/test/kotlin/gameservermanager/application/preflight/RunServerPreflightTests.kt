@@ -8,7 +8,7 @@ class RunServerPreflightTests {
     @Test
     fun `構築可能な環境ではエラーなしの結果を返す`() {
         val inspector = FakeEnvironmentInspector()
-        val useCase = RunServerPreflight(inspector)
+        val useCase = RunServerPreflight(inspector, FakeManagedPathPolicy())
 
         val report = useCase.execute(
             RunServerPreflight.Command(
@@ -30,7 +30,7 @@ class RunServerPreflightTests {
             udpPortAvailable = false,
             tcpPortAvailable = false,
         )
-        val useCase = RunServerPreflight(inspector)
+        val useCase = RunServerPreflight(inspector, FakeManagedPathPolicy())
 
         val report = useCase.execute(
             RunServerPreflight.Command(
@@ -49,7 +49,7 @@ class RunServerPreflightTests {
     @Test
     fun `空き容量が10GiB未満の場合はエラーにする`() {
         val inspector = FakeEnvironmentInspector(usableSpaceBytes = 9L * GIBIBYTE)
-        val useCase = RunServerPreflight(inspector)
+        val useCase = RunServerPreflight(inspector, FakeManagedPathPolicy())
 
         val report = useCase.execute(
             RunServerPreflight.Command(
@@ -61,6 +61,27 @@ class RunServerPreflightTests {
         )
 
         assertThat(report.checks.single { it.id == "storage.space" }.status)
+            .isEqualTo(PreflightStatus.ERROR)
+    }
+
+    @Test
+    fun `管理ルート外の保存先をエラーにする`() {
+        val useCase = RunServerPreflight(
+            FakeEnvironmentInspector(),
+            FakeManagedPathPolicy(serverPathAllowed = false),
+        )
+
+        val report = useCase.execute(
+            RunServerPreflight.Command(
+                installPath = "C:\\Other\\Palworld",
+                steamCmdPath = "C:\\GameServerManager\\tools\\steamcmd",
+                gamePort = 8211,
+                rconPort = 25575,
+            ),
+        )
+
+        assertThat(report.canProceed).isFalse()
+        assertThat(report.checks.single { it.id == "installPath.managed" }.status)
             .isEqualTo(PreflightStatus.ERROR)
     }
 
@@ -88,6 +109,23 @@ class RunServerPreflightTests {
 
         override fun isTcpPortAvailable(port: Int): Boolean {
             return tcpPortAvailable
+        }
+    }
+
+    private class FakeManagedPathPolicy(
+        private val serverPathAllowed: Boolean = true,
+        private val toolPathAllowed: Boolean = true,
+    ) : ManagedPathPolicy {
+        override fun isServerPathAllowed(path: String): Boolean {
+            return serverPathAllowed
+        }
+
+        override fun isToolPathAllowed(path: String): Boolean {
+            return toolPathAllowed
+        }
+
+        override fun managedRoot(): String {
+            return "C:\\GameServerManager"
         }
     }
 

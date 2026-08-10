@@ -2,3 +2,6 @@ spring:
   application:
     name: game-server-manager
 
+game-server-manager:
+  storage:
+    root: "C:\\GameServerManager"

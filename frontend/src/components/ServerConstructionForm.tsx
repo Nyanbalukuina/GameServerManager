@@ -107,7 +107,7 @@ export function ServerConstructionForm({
         </section>
 
         {errors.request && <p className="error request-error">{errors.request}</p>}
-        <button type="submit" disabled={isSubmitting}>
+        <button type="submit" disabled={isSubmitting} aria-busy={isSubmitting}>
           {isSubmitting ? '確認中...' : '構築計画を確認'}
         </button>
       </form>

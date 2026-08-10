@@ -22,6 +22,12 @@ class ApiExceptionHandler {
     fun handleInvalidPlan(exception: InvalidConstructionPlanException): ApiValidationError {
         return ApiValidationError(exception.errors)
     }
+
+    @ExceptionHandler(IllegalArgumentException::class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    fun handleIllegalArgument(exception: IllegalArgumentException): ApiValidationError {
+        return ApiValidationError(mapOf("request" to (exception.message ?: "入力内容を確認してください")))
+    }
 }
 
 class InvalidConstructionPlanException(

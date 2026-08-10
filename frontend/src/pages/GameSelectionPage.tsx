@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { AppLink } from '../components/AppLink'
 import '../styles/serverConstruction.css'
 
 export function GameSelectionPage() {
@@ -11,10 +11,10 @@ export function GameSelectionPage() {
       </header>
 
       <section className="card game-list">
-        <Link className="game-card" to="/servers/new/palworld">
+        <AppLink className="game-card" href="/servers/new/palworld">
           <strong>Palworld</strong>
           <span>新しいPalworld専用サーバーを構築します</span>
-        </Link>
+        </AppLink>
         <div className="game-card unavailable" aria-disabled="true">
           <strong>ARK</strong>
           <span>今後対応予定です</span>

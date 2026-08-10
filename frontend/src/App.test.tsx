@@ -29,8 +29,12 @@ describe('App', () => {
 
     expect(screen.getByRole('heading', { name: '新規Palworldサーバー構築' })).toBeInTheDocument()
     expect(screen.getByLabelText('サーバー名')).toBeInTheDocument()
-    expect(screen.getByLabelText('インストール先')).toHaveValue('C:\\GameServers\\Palworld')
-    expect(screen.getByLabelText('SteamCMDの保存先')).toHaveValue('C:\\GameServers\\SteamCMD')
+    expect(screen.getByLabelText('インストール先')).toHaveValue(
+      'C:\\GameServerManager\\servers\\palworld\\main\\runtime',
+    )
+    expect(screen.getByLabelText('SteamCMDの保存先')).toHaveValue(
+      'C:\\GameServerManager\\tools\\steamcmd',
+    )
     expect(screen.getByRole('button', { name: '構築計画を確認' })).toBeInTheDocument()
   })
 
@@ -41,8 +45,8 @@ describe('App', () => {
       vi.fn().mockResolvedValue(
         response({
           serverName: 'Palworld Server',
-          installPath: 'C:\\GameServers\\Palworld',
-          steamCmdPath: 'C:\\GameServers\\SteamCMD',
+          installPath: 'C:\\GameServerManager\\servers\\palworld\\main\\runtime',
+          steamCmdPath: 'C:\\GameServerManager\\tools\\steamcmd',
           gamePort: 8211,
           rconPort: 25575,
           maxPlayers: 3,
@@ -58,7 +62,9 @@ describe('App', () => {
     await user.click(screen.getByRole('button', { name: '構築計画を確認' }))
 
     expect(await screen.findByRole('heading', { name: '構築計画' })).toBeInTheDocument()
-    expect(screen.getByText('C:\\GameServers\\Palworld')).toBeInTheDocument()
+    expect(
+      screen.getByText('C:\\GameServerManager\\servers\\palworld\\main\\runtime'),
+    ).toBeInTheDocument()
     expect(screen.queryByText('admin-password')).not.toBeInTheDocument()
   })
 
@@ -80,42 +86,64 @@ describe('App', () => {
     expect(await screen.findByText('サーバー名を入力してください')).toBeInTheDocument()
   })
 
-  it('事前検証結果を一覧表示する', async () => {
+  it('事前検証後にパスワードを最終送信してデモ構築結果を表示する', async () => {
     const user = userEvent.setup()
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(
+        response({
+          serverName: 'Palworld Server',
+          installPath: 'C:\\GameServerManager\\servers\\palworld\\main\\runtime',
+          steamCmdPath: 'C:\\GameServerManager\\tools\\steamcmd',
+          gamePort: 8211,
+          rconPort: 25575,
+          maxPlayers: 3,
+          serverPasswordConfigured: false,
+          adminPasswordConfigured: true,
+        }),
+      )
+      .mockResolvedValueOnce(
+        response({
+          canProceed: false,
+          checks: [
+            {
+              id: 'installPath.writable',
+              label: 'インストール先の書き込み権限',
+              status: 'ERROR',
+              message: '作成先へ書き込みできません',
+            },
+            {
+              id: 'port.game',
+              label: 'ゲームポート UDP 8211',
+              status: 'PASS',
+              message: '使用できます',
+            },
+            {
+              id: 'steamcmd.installed',
+              label: 'SteamCMD',
+              status: 'WARNING',
+              message: 'SteamCMDは構築時にダウンロードされます',
+            },
+          ],
+        }),
+      )
+      .mockResolvedValueOnce(
+        response({
+          completed: true,
+          mode: 'DEMO',
+          workspacePath: 'C:\\Temp\\game-server-manager-demo',
+          steps: [
+            {
+              id: 'steamcmd',
+              label: 'SteamCMDの準備',
+              status: 'COMPLETED',
+              message: 'デモSteamCMDを一時領域へ配置しました',
+            },
+          ],
+        }),
+      )
     vi.stubGlobal(
       'fetch',
-      vi.fn()
-        .mockResolvedValueOnce(
-          response({
-            serverName: 'Palworld Server',
-            installPath: 'C:\\GameServers\\Palworld',
-            steamCmdPath: 'C:\\GameServers\\SteamCMD',
-            gamePort: 8211,
-            rconPort: 25575,
-            maxPlayers: 3,
-            serverPasswordConfigured: false,
-            adminPasswordConfigured: true,
-          }),
-        )
-        .mockResolvedValueOnce(
-          response({
-            canProceed: true,
-            checks: [
-              {
-                id: 'port.game',
-                label: 'ゲームポート UDP 8211',
-                status: 'PASS',
-                message: '使用できます',
-              },
-              {
-                id: 'steamcmd.installed',
-                label: 'SteamCMD',
-                status: 'WARNING',
-                message: 'SteamCMDは構築時にダウンロードされます',
-              },
-            ],
-          }),
-        ),
+      fetchMock,
     )
     render(<App />)
 
@@ -125,9 +153,20 @@ describe('App', () => {
     await screen.findByRole('heading', { name: '構築計画' })
     await user.click(screen.getByRole('button', { name: '事前検証を実行' }))
 
-    expect(await screen.findByText('構築を進められる環境です')).toBeInTheDocument()
+    expect(await screen.findByText('修正が必要な項目があります')).toBeInTheDocument()
     expect(screen.getByText('ゲームポート UDP 8211')).toBeInTheDocument()
     expect(screen.getByText('SteamCMDは構築時にダウンロードされます')).toBeInTheDocument()
+    expect(
+      screen.getByText('実構築には修正が必要ですが、デモ構築は一時領域で実行できます。'),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'デモ構築を実行' }))
+
+    expect(await screen.findByText('デモ構築が完了しました')).toBeInTheDocument()
+    expect(screen.getByText('デモSteamCMDを一時領域へ配置しました')).toBeInTheDocument()
+    const finalRequest = JSON.parse(String(fetchMock.mock.calls[2][1]?.body))
+    expect(finalRequest.adminPassword).toBe('admin-password')
+    expect(screen.queryByText('admin-password')).not.toBeInTheDocument()
   })
 })
 

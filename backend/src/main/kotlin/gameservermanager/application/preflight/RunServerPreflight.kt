@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service
 @Service
 class RunServerPreflight(
     private val environmentInspector: ServerEnvironmentInspector,
+    private val managedPathPolicy: ManagedPathPolicy,
 ) {
     fun execute(command: Command): ServerPreflightReport {
         val installPath = environmentInspector.inspectPath(command.installPath)
@@ -15,6 +16,8 @@ class RunServerPreflight(
         val checks = buildList {
             addPathChecks("installPath", "インストール先", installPath)
             addPathChecks("steamCmdPath", "SteamCMD保存先", steamCmdPath)
+            add(serverPathAllowed(command.installPath))
+            add(toolPathAllowed(command.steamCmdPath))
             add(pathsDistinct(command))
             add(storageSpace(installPath))
             add(steamCmdInstallation(steamCmdPath))
@@ -26,6 +29,30 @@ class RunServerPreflight(
             canProceed = checks.none { it.status == PreflightStatus.ERROR },
             checks = checks,
         )
+    }
+
+    private fun serverPathAllowed(path: String): PreflightCheck {
+        return if (managedPathPolicy.isServerPathAllowed(path)) {
+            pass("installPath.managed", "インストール先の管理範囲", "servers配下のパスです")
+        } else {
+            error(
+                "installPath.managed",
+                "インストール先の管理範囲",
+                "${managedPathPolicy.managedRoot()}\\servers 配下を指定してください",
+            )
+        }
+    }
+
+    private fun toolPathAllowed(path: String): PreflightCheck {
+        return if (managedPathPolicy.isToolPathAllowed(path)) {
+            pass("steamCmdPath.managed", "SteamCMD保存先の管理範囲", "tools配下のパスです")
+        } else {
+            error(
+                "steamCmdPath.managed",
+                "SteamCMD保存先の管理範囲",
+                "${managedPathPolicy.managedRoot()}\\tools 配下を指定してください",
+            )
+        }
     }
 
     private fun MutableList<PreflightCheck>.addPathChecks(
