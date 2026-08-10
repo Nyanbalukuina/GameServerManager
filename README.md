@@ -17,17 +17,26 @@ GameServerManager/
 │     ├─ main/
 │     │  ├─ kotlin/gameservermanager/
 │     │  │  ├─ web/
+│     │  │  │  ├─ palworld/
 │     │  │  │  ├─ construction/
 │     │  │  │  ├─ preflight/
+│     │  │  │  ├─ steamcmd/
 │     │  │  │  └─ error/
 │     │  │  ├─ application/
+│     │  │  │  ├─ palworld/
 │     │  │  │  ├─ construction/
-│     │  │  │  └─ preflight/
+│     │  │  │  ├─ preflight/
+│     │  │  │  └─ steamcmd/
 │     │  │  ├─ domain/
+│     │  │  │  ├─ palworld/
 │     │  │  │  ├─ construction/
-│     │  │  │  └─ preflight/
+│     │  │  │  ├─ preflight/
+│     │  │  │  └─ steamcmd/
 │     │  │  └─ infrastructure/
-│     │  │     └─ windows/
+│     │  │     ├─ palworld/
+│     │  │     ├─ steamcmd/
+│     │  │     ├─ windows/
+│     │  │     └─ demo/
 │     │  └─ resources/
 │     └─ test/kotlin/gameservermanager/
 └─ frontend/
@@ -40,7 +49,7 @@ GameServerManager/
       └─ App.tsx
 ```
 
-バックエンドは`web`、`application`、`domain`、`infrastructure`の役割で分け、その中を`construction`や`preflight`などの機能単位で整理します。
+バックエンドは`web`、`application`、`domain`、`infrastructure`の役割で分け、その中を機能単位で整理します。Palworld専用処理は各レイヤーの`palworld`へまとめ、SteamCMDなど他ゲームでも利用できる処理は共通機能として分離します。
 
 - `web`: REST API、リクエスト、APIエラー
 - `application`: ユースケースと処理手順
@@ -69,6 +78,26 @@ C:\GameServerManager\
 
 現在は実SteamCMDを起動せず、OSの一時領域へ同じ構成の小さな模擬ファイルを作るデモ構築に対応しています。
 
+## ネットワーク公開
+
+GameServerManagerは特定のVPN製品へ依存しないWebアプリとして実装します。LAN、Tailscale、その他のVPNからのアクセスは、Spring Bootにとってすべて通常のHTTP通信として扱います。
+
+ログイン機能が完成するまでは、安全のため`127.0.0.1:8080`だけで待ち受けます。認証、Cookieセッション、CSRF対策の実装後は、次の環境変数でLANやVPNから接続できるようにします。
+
+```powershell
+$env:GAME_SERVER_MANAGER_ADDRESS = "0.0.0.0"
+$env:GAME_SERVER_MANAGER_PORT = "8080"
+```
+
+想定するアクセス例です。
+
+```text
+自宅LAN:   http://192.168.x.x:8080
+Tailscale: http://100.x.x.x:8080
+```
+
+Tailscaleは任意の利用例であり、GameServerManagerの必須依存ではありません。Tailscaleのインストール、Tailnetへの端末追加、アクセス制御は利用者が行います。管理ポート`8080`をルーターのポート転送などで一般インターネットへ直接公開しないでください。
+
 ## 開発時の起動
 
 ターミナル1でバックエンドを起動します。
@@ -92,6 +121,22 @@ npm.cmd run dev
 ```powershell
 cd backend
 .\gradlew.bat test
+```
+
+Valve公式SteamCMDを一時フォルダーへ実際にダウンロードして検証する場合は、明示的に外部テストを有効化します。
+
+```powershell
+cd backend
+.\gradlew.bat test --tests "gameservermanager.infrastructure.steamcmd.OfficialSteamCmdDownloadExternalTests" -PsteamcmdExternalTest=true
+```
+
+通常のバックエンドテストではネットワークへ接続しません。
+
+Palworld Dedicated Serverを一時フォルダーへ実際にインストールする外部テストは以下です。数GB規模の通信が発生し、Steamネットワークへ直接接続できる環境が必要です。
+
+```powershell
+cd backend
+.\gradlew.bat test --tests "gameservermanager.infrastructure.steamcmd.PalworldInstallationExternalTests" -PpalworldExternalTest=true
 ```
 
 ```powershell

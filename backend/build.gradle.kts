@@ -28,4 +28,12 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    systemProperty(
+        "steamcmd.external.test",
+        providers.gradleProperty("steamcmdExternalTest").getOrElse("false"),
+    )
+    systemProperty(
+        "palworld.external.test",
+        providers.gradleProperty("palworldExternalTest").getOrElse("false"),
+    )
 }
