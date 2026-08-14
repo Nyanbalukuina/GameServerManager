@@ -17,6 +17,7 @@ class RunDemoServerConstructionTests {
             installer,
             configurator,
             registrations,
+            CreateGamePortAccess(),
         )
 
         val report = useCase.execute(validCommand())
@@ -38,6 +39,7 @@ class RunDemoServerConstructionTests {
         assertThat(configurator.command?.automationEnabled).isTrue()
         assertThat(configurator.command?.shutdownTime).isEqualTo("04:00")
         assertThat(registrations.findByGame("PALWORLD")?.mode).isEqualTo("DEMO")
+        assertThat(registrations.findByGame("PALWORLD")?.gamePortAccess?.tailscale).isTrue()
     }
 
     private fun validCommand(): RunDemoServerConstruction.Command {
@@ -54,6 +56,12 @@ class RunDemoServerConstructionTests {
             shutdownTime = "04:00",
             startupTime = "09:00",
             backupAfterShutdown = true,
+            gamePortAccess = CreateGamePortAccess.Command(
+                localSubnet = true,
+                tailscale = true,
+                customRemoteAddresses = "",
+                allowAny = false,
+            ),
         )
     }
 

@@ -4,7 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class CreateServerConstructionPlanTests {
-    private val useCase = CreateServerConstructionPlan()
+    private val useCase = CreateServerConstructionPlan(CreateGamePortAccess())
 
     @Test
     fun `入力を整形して構築計画を作成する`() {
@@ -22,6 +22,12 @@ class CreateServerConstructionPlanTests {
                 shutdownTime = "04:00",
                 startupTime = "09:00",
                 backupAfterShutdown = true,
+                gamePortAccess = CreateGamePortAccess.Command(
+                    localSubnet = true,
+                    tailscale = true,
+                    customRemoteAddresses = "10.8.0.0/24",
+                    allowAny = false,
+                ),
             ),
         )
 
@@ -34,5 +40,7 @@ class CreateServerConstructionPlanTests {
         assertThat(plan.shutdownTime).isEqualTo("04:00")
         assertThat(plan.startupTime).isEqualTo("09:00")
         assertThat(plan.backupRetentionCount).isEqualTo(3)
+        assertThat(plan.gamePortAccess.remoteAddresses())
+            .containsExactly("LocalSubnet", "100.64.0.0/10", "10.8.0.0/24")
     }
 }

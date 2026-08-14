@@ -1,6 +1,7 @@
 package gameservermanager.web.palworld
 
 import gameservermanager.application.palworld.ConstructPalworldServer
+import gameservermanager.application.construction.CreateGamePortAccess
 import gameservermanager.domain.construction.ServerConstructionReport
 import gameservermanager.web.construction.NewServerRequest
 import jakarta.validation.Valid
@@ -30,6 +31,12 @@ class PalworldConstructionController(
                 shutdownTime = request.shutdownTime,
                 startupTime = request.startupTime,
                 backupAfterShutdown = request.backupAfterShutdown,
+                gamePortAccess = CreateGamePortAccess.Command(
+                    localSubnet = request.allowLocalSubnet,
+                    tailscale = request.allowTailscale,
+                    customRemoteAddresses = request.customRemoteAddresses,
+                    allowAny = request.allowAnyRemoteAddress,
+                ),
             ),
         )
     }

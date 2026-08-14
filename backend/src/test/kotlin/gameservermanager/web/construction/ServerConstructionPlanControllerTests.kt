@@ -1,6 +1,7 @@
 package gameservermanager.web.construction
 
 import gameservermanager.application.construction.CreateServerConstructionPlan
+import gameservermanager.application.construction.CreateGamePortAccess
 import gameservermanager.web.error.ApiExceptionHandler
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -13,7 +14,7 @@ import org.springframework.test.web.servlet.post
 
 @WebMvcTest(ServerConstructionPlanController::class)
 @AutoConfigureMockMvc(addFilters = false)
-@Import(CreateServerConstructionPlan::class, ApiExceptionHandler::class)
+@Import(CreateServerConstructionPlan::class, CreateGamePortAccess::class, ApiExceptionHandler::class)
 class ServerConstructionPlanControllerTests @Autowired constructor(
     private val mockMvc: MockMvc,
 ) {
@@ -34,6 +35,8 @@ class ServerConstructionPlanControllerTests @Autowired constructor(
             jsonPath("$.startupTime") { value("09:00") }
             jsonPath("$.backupAfterShutdown") { value(true) }
             jsonPath("$.backupRetentionCount") { value(3) }
+            jsonPath("$.gamePortAccess.localSubnet") { value(true) }
+            jsonPath("$.gamePortAccess.tailscale") { value(true) }
             jsonPath("$.adminPassword") { doesNotExist() }
         }
     }

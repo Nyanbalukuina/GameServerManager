@@ -15,6 +15,7 @@ class RunDemoServerConstruction(
     private val steamCmdInstaller: SteamCmdInstaller,
     private val demoServerConfigurator: DemoServerConfigurator,
     private val registrationStore: GameServerRegistrationStore,
+    private val createGamePortAccess: CreateGamePortAccess,
 ) {
     fun execute(command: Command): DemoConstructionReport {
         if (registrationStore.findByGame("PALWORLD") != null) {
@@ -33,6 +34,7 @@ class RunDemoServerConstruction(
             "管理者パスワードを入力してください"
         }
 
+        val gamePortAccess = createGamePortAccess.execute(command.gamePortAccess)
         val installCommand = SteamCmdInstallCommand(
             steamCmdPath = command.steamCmdPath,
             installPath = command.installPath,
@@ -52,6 +54,7 @@ class RunDemoServerConstruction(
                 shutdownTime = command.shutdownTime,
                 startupTime = command.startupTime,
                 backupAfterShutdown = command.backupAfterShutdown,
+                gamePortAccess = gamePortAccess,
             ),
         )
         registrationStore.create(
@@ -66,6 +69,7 @@ class RunDemoServerConstruction(
                 gamePort = command.gamePort,
                 rconPort = command.rconPort,
                 createdAt = Clock.systemUTC().instant(),
+                gamePortAccess = gamePortAccess,
             ),
         )
 
@@ -107,6 +111,7 @@ class RunDemoServerConstruction(
         val shutdownTime: String,
         val startupTime: String,
         val backupAfterShutdown: Boolean,
+        val gamePortAccess: CreateGamePortAccess.Command,
     )
 
     companion object {

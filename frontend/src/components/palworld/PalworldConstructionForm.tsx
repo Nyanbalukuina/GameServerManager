@@ -85,6 +85,47 @@ export function PalworldConstructionForm({
             error={errors.maxPlayers}
             onChange={(value) => onFieldChange('maxPlayers', value)}
           />
+          <fieldset>
+            <legend>プレイヤーの接続範囲</legend>
+            <label className="automation-toggle">
+              <input
+                type="checkbox"
+                checked={form.allowLocalSubnet}
+                disabled={form.allowAnyRemoteAddress}
+                onChange={(event) => onFieldChange('allowLocalSubnet', event.target.checked)}
+              />
+              同一LANを許可
+            </label>
+            <label className="automation-toggle">
+              <input
+                type="checkbox"
+                checked={form.allowTailscale}
+                disabled={form.allowAnyRemoteAddress}
+                onChange={(event) => onFieldChange('allowTailscale', event.target.checked)}
+              />
+              Tailscaleを許可（100.64.0.0/10）
+            </label>
+            <label htmlFor="customRemoteAddresses">接続元を手動指定（任意）</label>
+            <textarea
+              id="customRemoteAddresses"
+              value={form.customRemoteAddresses}
+              disabled={form.allowAnyRemoteAddress}
+              placeholder={'例: 10.8.0.0/24\n100.80.0.20'}
+              onChange={(event) => onFieldChange('customRemoteAddresses', event.target.value)}
+            />
+            <p className="error">{errors.customRemoteAddresses}</p>
+            <label className="automation-toggle">
+              <input
+                type="checkbox"
+                checked={form.allowAnyRemoteAddress}
+                onChange={(event) => onFieldChange('allowAnyRemoteAddress', event.target.checked)}
+              />
+              すべての接続元を許可（上級者向け）
+            </label>
+            {form.allowAnyRemoteAddress && (
+              <p className="notice">サーバーPCへ到達可能なすべての端末からゲームポートへの通信を許可します。</p>
+            )}
+          </fieldset>
         </section>
 
         <section className="card form-section">

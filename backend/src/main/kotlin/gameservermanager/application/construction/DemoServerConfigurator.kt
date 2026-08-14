@@ -1,5 +1,7 @@
 package gameservermanager.application.construction
 
+import gameservermanager.domain.server.GamePortAccess
+
 data class DemoServerConfigurationCommand(
     val workspacePath: String,
     val serverName: String,
@@ -12,6 +14,7 @@ data class DemoServerConfigurationCommand(
     val shutdownTime: String,
     val startupTime: String,
     val backupAfterShutdown: Boolean,
+    val gamePortAccess: GamePortAccess,
 )
 
 interface DemoServerConfigurator {

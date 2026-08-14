@@ -4,7 +4,9 @@ import gameservermanager.domain.construction.ServerConstructionPlan
 import org.springframework.stereotype.Service
 
 @Service
-class CreateServerConstructionPlan {
+class CreateServerConstructionPlan(
+    private val createGamePortAccess: CreateGamePortAccess,
+) {
     fun execute(command: Command): ServerConstructionPlan {
         require(!command.automationEnabled || command.shutdownTime != command.startupTime) {
             "停止時刻と起動時刻は別の時刻を指定してください"
@@ -23,6 +25,7 @@ class CreateServerConstructionPlan {
             startupTime = command.startupTime,
             backupAfterShutdown = command.backupAfterShutdown,
             backupRetentionCount = 3,
+            gamePortAccess = createGamePortAccess.execute(command.gamePortAccess),
         )
     }
 
@@ -39,5 +42,6 @@ class CreateServerConstructionPlan {
         val shutdownTime: String,
         val startupTime: String,
         val backupAfterShutdown: Boolean,
+        val gamePortAccess: CreateGamePortAccess.Command,
     )
 }

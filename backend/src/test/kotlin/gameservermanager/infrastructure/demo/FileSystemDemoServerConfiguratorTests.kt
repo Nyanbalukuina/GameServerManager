@@ -2,6 +2,7 @@ package gameservermanager.infrastructure.demo
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import gameservermanager.application.construction.DemoServerConfigurationCommand
+import gameservermanager.domain.server.GamePortAccess
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
@@ -27,6 +28,7 @@ class FileSystemDemoServerConfiguratorTests {
                 shutdownTime = "04:00",
                 startupTime = "09:00",
                 backupAfterShutdown = true,
+                gamePortAccess = GamePortAccess(),
             ),
         )
 
@@ -35,6 +37,10 @@ class FileSystemDemoServerConfiguratorTests {
         )
         val automation = Files.readString(tempDir.resolve("config/palworld-main-automation.demo.json"))
         assertThat(settings).contains("AdminPassword=<configured>").doesNotContain("admin-password")
-        assertThat(automation).contains("\"enabled\" : true", "\"backupRetentionCount\" : 3")
+        assertThat(automation).contains(
+            "\"enabled\" : true",
+            "\"backupRetentionCount\" : 3",
+            "\"100.64.0.0/10\"",
+        )
     }
 }

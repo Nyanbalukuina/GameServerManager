@@ -33,6 +33,10 @@ const initialForm: NewServerRequest = {
   shutdownTime: '04:00',
   startupTime: '09:00',
   backupAfterShutdown: true,
+  allowLocalSubnet: true,
+  allowTailscale: true,
+  customRemoteAddresses: '',
+  allowAnyRemoteAddress: false,
 }
 
 export function PalworldConstructionPage() {

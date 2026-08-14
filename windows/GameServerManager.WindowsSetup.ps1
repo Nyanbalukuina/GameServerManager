@@ -9,6 +9,8 @@ param(
     [ValidateRange(1, 65535)]
     [int]$GamePort = 8211,
 
+    [string]$GameRemoteAddress = 'LocalSubnet,100.64.0.0/10',
+
     [string]$StorageRoot = 'C:\GameServerManager',
 
     [string]$JarPath = '',
@@ -20,7 +22,29 @@ $ErrorActionPreference = 'Stop'
 $taskName = 'GameServerManager'
 $managementRule = 'GameServerManager-Management-TCP'
 $gameRule = 'GameServerManager-Palworld-Game-UDP'
-$allowedRemoteAddresses = @('LocalSubnet', '100.64.0.0/10')
+$managementAllowedRemoteAddresses = @('LocalSubnet', '100.64.0.0/10')
+$gameRemoteAddresses = @($GameRemoteAddress.Split(',') | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+
+function Test-RemoteAddress([string]$Value) {
+    if ($Value -eq 'LocalSubnet' -or $Value -eq 'Any') {
+        return $true
+    }
+    return $Value -match '^(?:\d{1,3}\.){3}\d{1,3}(?:/(?:[0-9]|[12][0-9]|3[0-2]))?$'
+}
+
+function Assert-GameRemoteAddresses {
+    if (-not $gameRemoteAddresses -or $gameRemoteAddresses.Count -eq 0) {
+        throw 'GameRemoteAddressを1つ以上指定してください'
+    }
+    foreach ($address in $gameRemoteAddresses) {
+        if (-not (Test-RemoteAddress $address)) {
+            throw "GameRemoteAddressが不正です: $address"
+        }
+    }
+    if ($gameRemoteAddresses -contains 'Any' -and $gameRemoteAddresses.Count -ne 1) {
+        throw 'AnyはほかのGameRemoteAddressと同時に指定できません'
+    }
+}
 
 function Resolve-SetupPaths {
     $script:resolvedStorageRoot = [System.IO.Path]::GetFullPath($StorageRoot)
@@ -60,6 +84,7 @@ function Get-SetupStatus {
         storageRoot = $resolvedStorageRoot
         managementPort = $ManagementPort
         gamePort = $GamePort
+        gameRemoteAddresses = $gameRemoteAddresses
     }
 }
 
@@ -79,6 +104,7 @@ function Install-Integration {
     if (-not (Test-Path -LiteralPath $resolvedJavawPath -PathType Leaf)) {
         throw "javaw.exeが見つかりません: $resolvedJavawPath"
     }
+    Assert-GameRemoteAddresses
 
     $launcherDirectory = Split-Path -Parent $launcherPath
     $applicationDirectory = Split-Path -Parent $installedJarPath
@@ -100,7 +126,7 @@ function Install-Integration {
         -Action Allow `
         -Protocol TCP `
         -LocalPort $ManagementPort `
-        -RemoteAddress $allowedRemoteAddresses | Out-Null
+        -RemoteAddress $managementAllowedRemoteAddresses | Out-Null
 
     Get-NetFirewallRule -DisplayName $gameRule -ErrorAction SilentlyContinue | Remove-NetFirewallRule
     New-NetFirewallRule `
@@ -109,7 +135,7 @@ function Install-Integration {
         -Action Allow `
         -Protocol UDP `
         -LocalPort $GamePort `
-        -RemoteAddress $allowedRemoteAddresses | Out-Null
+        -RemoteAddress $gameRemoteAddresses | Out-Null
 
     $taskAction = New-ScheduledTaskAction `
         -Execute 'powershell.exe' `
@@ -144,6 +170,7 @@ Resolve-SetupPaths
 
 switch ($Action) {
     'Plan' {
+        Assert-GameRemoteAddresses
         [ordered]@{
             operations = @(
                 'ADD_MANAGEMENT_FIREWALL_RULE',
@@ -153,7 +180,8 @@ switch ($Action) {
             taskName = $taskName
             managementRule = $managementRule
             gameRule = $gameRule
-            allowedRemoteAddresses = $allowedRemoteAddresses
+            managementAllowedRemoteAddresses = $managementAllowedRemoteAddresses
+            gameRemoteAddresses = $gameRemoteAddresses
             launcherPath = $launcherPath
             sourceJarPath = $resolvedJarPath
             installedJarPath = $installedJarPath

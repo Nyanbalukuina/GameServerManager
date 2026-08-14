@@ -1,6 +1,7 @@
 package gameservermanager.application.palworld
 
 import gameservermanager.application.server.GameServerRegistrationStore
+import gameservermanager.application.construction.CreateGamePortAccess
 import gameservermanager.application.steamcmd.PrepareSteamCmd
 import gameservermanager.domain.construction.ConstructionStep
 import gameservermanager.domain.construction.ConstructionStepStatus
@@ -20,6 +21,7 @@ class ConstructPalworldServer(
     private val configurePalworldAutomation: ConfigurePalworldAutomation,
     private val startPalworldServer: StartPalworldServer,
     private val registrationStore: GameServerRegistrationStore,
+    private val createGamePortAccess: CreateGamePortAccess,
 ) {
     @Synchronized
     fun execute(command: Command): ServerConstructionReport {
@@ -27,6 +29,7 @@ class ConstructPalworldServer(
             throw GameServerAlreadyExistsException(GAME)
         }
 
+        val gamePortAccess = createGamePortAccess.execute(command.gamePortAccess)
         val steps = mutableListOf<ConstructionStep>()
         val steamCmdExecutable = Path.of(command.steamCmdPath)
             .toAbsolutePath()
@@ -93,6 +96,7 @@ class ConstructPalworldServer(
                 gamePort = command.gamePort,
                 rconPort = command.rconPort,
                 createdAt = Clock.systemUTC().instant(),
+                gamePortAccess = gamePortAccess,
             ),
         )
         steps += completed("registration", "管理対象への登録", "Palworldサーバーを登録しました")
@@ -122,6 +126,7 @@ class ConstructPalworldServer(
         val shutdownTime: String,
         val startupTime: String,
         val backupAfterShutdown: Boolean,
+        val gamePortAccess: CreateGamePortAccess.Command,
     )
 
     companion object {

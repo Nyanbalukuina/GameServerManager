@@ -40,6 +40,9 @@ describe('App', () => {
     })
     expect(screen.getByRole('button', { name: '構築計画を確認' })).toBeInTheDocument()
     expect(screen.getByLabelText('自動運転を有効にする')).not.toBeChecked()
+    expect(screen.getByLabelText('同一LANを許可')).toBeChecked()
+    expect(screen.getByLabelText('Tailscaleを許可（100.64.0.0/10）')).toBeChecked()
+    expect(screen.getByLabelText('すべての接続元を許可（上級者向け）')).not.toBeChecked()
     expect(screen.getByLabelText('毎日の停止時刻')).toHaveValue('04:00')
     expect(screen.getByLabelText('毎日の起動時刻')).toHaveValue('09:00')
   })
@@ -99,6 +102,7 @@ describe('App', () => {
           startupTime: '09:00',
           backupAfterShutdown: true,
           backupRetentionCount: 3,
+          gamePortAccess: defaultGamePortAccess(),
       }),
     ]))
     render(<App />)
@@ -146,6 +150,7 @@ describe('App', () => {
           startupTime: '09:00',
           backupAfterShutdown: true,
           backupRetentionCount: 3,
+          gamePortAccess: defaultGamePortAccess(),
         }),
         response({
           canProceed: false,
@@ -230,6 +235,7 @@ describe('App', () => {
         startupTime: '09:00',
         backupAfterShutdown: true,
         backupRetentionCount: 3,
+        gamePortAccess: defaultGamePortAccess(),
       }),
       response({ canProceed: true, checks: [] }),
       response({
@@ -331,6 +337,16 @@ function demoPalworldServer() {
     gamePort: 8211,
     rconPort: 25575,
     createdAt: '2026-08-10T00:00:00Z',
+    gamePortAccess: defaultGamePortAccess(),
+  }
+}
+
+function defaultGamePortAccess() {
+  return {
+    localSubnet: true,
+    tailscale: true,
+    customRemoteAddresses: [],
+    allowAny: false,
   }
 }
 

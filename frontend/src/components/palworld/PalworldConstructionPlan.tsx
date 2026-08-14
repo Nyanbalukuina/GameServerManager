@@ -58,6 +58,8 @@ export function PalworldConstructionPlan({
           <dd>{plan.steamCmdPath}</dd>
           <dt>ゲームポート</dt>
           <dd>{plan.gamePort}</dd>
+          <dt>ゲームポートの接続元</dt>
+          <dd>{formatGamePortAccess(plan)}</dd>
           <dt>RCONポート</dt>
           <dd>{plan.rconPort}</dd>
           <dt>最大プレイヤー数</dt>
@@ -144,4 +146,14 @@ export function PalworldConstructionPlan({
       </button>
     </>
   )
+}
+
+function formatGamePortAccess(plan: ServerConstructionPlan): string {
+  if (plan.gamePortAccess.allowAny) return 'すべての接続元'
+  const scopes = [
+    plan.gamePortAccess.localSubnet ? '同一LAN' : null,
+    plan.gamePortAccess.tailscale ? 'Tailscale' : null,
+    ...plan.gamePortAccess.customRemoteAddresses,
+  ].filter((scope): scope is string => scope !== null)
+  return scopes.join('、')
 }

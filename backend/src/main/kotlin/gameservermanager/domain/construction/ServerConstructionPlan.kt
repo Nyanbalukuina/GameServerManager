@@ -1,5 +1,7 @@
 package gameservermanager.domain.construction
 
+import gameservermanager.domain.server.GamePortAccess
+
 data class ServerConstructionPlan(
     val serverName: String,
     val installPath: String,
@@ -14,4 +16,5 @@ data class ServerConstructionPlan(
     val startupTime: String,
     val backupAfterShutdown: Boolean,
     val backupRetentionCount: Int,
+    val gamePortAccess: GamePortAccess,
 )

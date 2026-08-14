@@ -203,6 +203,17 @@ Palworldサーバーの新規作成画面で、毎日の停止時刻と起動時
 
 自動運転設定は `config/palworld-main-automation.json`、実行状態は `config/palworld-main-automation-runtime.json` に保存します。管理者パスワードは自動運転設定へ保存せず、停止処理の直前にPalworld本体の `PalWorldSettings.ini` から読み取ります。
 
+## ゲームポートの接続範囲
+
+Palworld作成時に、プレイヤー接続用UDPポートの接続元を選択できます。既定では同一LANとTailscaleを許可します。
+
+- 同一LAN: `LocalSubnet`
+- Tailscale: `100.64.0.0/10`
+- 手動指定: IPv4アドレスまたはCIDRを複数指定可能
+- すべての接続元: `Any`。選択時はほかの範囲を無効化
+
+選択内容は構築計画、デモ設定、`config/servers.json`のサーバー登録へ保存します。デモ作成ではWindows Firewallを変更しません。管理画面、RCON、Palworld REST APIの公開範囲とは分離して扱います。
+
 ## Windows Firewallと自動起動
 
 React画面を含む実行可能JARと、管理者権限が必要な限定操作だけを行うセットアップスクリプトを生成できます。
@@ -220,7 +231,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\GameServerManager.Wind
   -Action Plan `
   -StorageRoot C:\GameServerManager `
   -ManagementPort 8080 `
-  -GamePort 8211
+  -GamePort 8211 `
+  -GameRemoteAddress "LocalSubnet,100.64.0.0/10"
 ```
 
 登録は管理者として開いたPowerShellで実行します。
@@ -230,7 +242,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\GameServerManager.Wind
   -Action Install `
   -StorageRoot C:\GameServerManager `
   -ManagementPort 8080 `
-  -GamePort 8211
+  -GamePort 8211 `
+  -GameRemoteAddress "LocalSubnet,100.64.0.0/10"
 ```
 
 `Install`は次の限定操作だけを行います。

@@ -11,6 +11,10 @@ export type NewServerRequest = {
   shutdownTime: string
   startupTime: string
   backupAfterShutdown: boolean
+  allowLocalSubnet: boolean
+  allowTailscale: boolean
+  customRemoteAddresses: string
+  allowAnyRemoteAddress: boolean
 }
 
 export type ServerConstructionPlan = {
@@ -27,6 +31,12 @@ export type ServerConstructionPlan = {
   startupTime: string
   backupAfterShutdown: boolean
   backupRetentionCount: number
+  gamePortAccess: {
+    localSubnet: boolean
+    tailscale: boolean
+    customRemoteAddresses: string[]
+    allowAny: boolean
+  }
 }
 
 export type ValidationErrors = Partial<Record<keyof NewServerRequest | 'request', string>>

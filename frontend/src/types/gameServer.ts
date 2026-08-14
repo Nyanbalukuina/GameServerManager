@@ -9,4 +9,10 @@ export type GameServerRegistration = {
   gamePort: number
   rconPort: number
   createdAt: string
+  gamePortAccess: {
+    localSubnet: boolean
+    tailscale: boolean
+    customRemoteAddresses: string[]
+    allowAny: boolean
+  }
 }

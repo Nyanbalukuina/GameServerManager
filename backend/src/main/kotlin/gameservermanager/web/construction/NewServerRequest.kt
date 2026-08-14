@@ -51,4 +51,13 @@ data class NewServerRequest(
     val startupTime: String = "09:00",
 
     val backupAfterShutdown: Boolean = true,
+
+    val allowLocalSubnet: Boolean = true,
+
+    val allowTailscale: Boolean = true,
+
+    @field:Size(max = 2000, message = "接続元の手動指定は2000文字以内で入力してください")
+    val customRemoteAddresses: String = "",
+
+    val allowAnyRemoteAddress: Boolean = false,
 )

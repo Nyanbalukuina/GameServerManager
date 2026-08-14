@@ -1,6 +1,7 @@
 package gameservermanager.web.construction
 
 import gameservermanager.application.construction.CreateServerConstructionPlan
+import gameservermanager.application.construction.CreateGamePortAccess
 import gameservermanager.domain.construction.ServerConstructionPlan
 import gameservermanager.web.error.InvalidConstructionPlanException
 import jakarta.validation.Valid
@@ -36,6 +37,12 @@ class ServerConstructionPlanController(
                 shutdownTime = request.shutdownTime,
                 startupTime = request.startupTime,
                 backupAfterShutdown = request.backupAfterShutdown,
+                gamePortAccess = CreateGamePortAccess.Command(
+                    localSubnet = request.allowLocalSubnet,
+                    tailscale = request.allowTailscale,
+                    customRemoteAddresses = request.customRemoteAddresses,
+                    allowAny = request.allowAnyRemoteAddress,
+                ),
             ),
         )
     }

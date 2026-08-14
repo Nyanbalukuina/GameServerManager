@@ -64,6 +64,7 @@ export function PalworldManagementPage() {
               <dt>状態</dt><dd>{server.state === 'RUNNING' ? '起動中' : '停止中'}</dd>
               <dt>ゲームポート</dt><dd>{server.gamePort}</dd>
               <dt>RCONポート</dt><dd>{server.rconPort}</dd>
+              <dt>ゲームポートの接続元</dt><dd>{formatGamePortAccess(server)}</dd>
               <dt>デモデータ</dt><dd>{server.workspacePath}</dd>
             </dl>
             {server.mode === 'DEMO' ? (
@@ -95,4 +96,13 @@ export function PalworldManagementPage() {
       )}
     </main>
   )
+}
+
+function formatGamePortAccess(server: GameServerRegistration): string {
+  if (server.gamePortAccess.allowAny) return 'すべての接続元'
+  return [
+    server.gamePortAccess.localSubnet ? '同一LAN' : null,
+    server.gamePortAccess.tailscale ? 'Tailscale' : null,
+    ...server.gamePortAccess.customRemoteAddresses,
+  ].filter((value): value is string => value !== null).join('、')
 }

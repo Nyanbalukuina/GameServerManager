@@ -13,4 +13,5 @@ data class GameServerRegistration(
     val gamePort: Int,
     val rconPort: Int,
     val createdAt: Instant,
+    val gamePortAccess: GamePortAccess = GamePortAccess(),
 )

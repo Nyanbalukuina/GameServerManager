@@ -1,5 +1,6 @@
 package gameservermanager.web.construction
 
+import gameservermanager.application.construction.CreateGamePortAccess
 import gameservermanager.application.construction.RunDemoServerConstruction
 import gameservermanager.domain.construction.DemoConstructionReport
 import jakarta.validation.Valid
@@ -28,6 +29,12 @@ class DemoServerConstructionController(
             shutdownTime = request.shutdownTime,
             startupTime = request.startupTime,
             backupAfterShutdown = request.backupAfterShutdown,
+            gamePortAccess = CreateGamePortAccess.Command(
+                localSubnet = request.allowLocalSubnet,
+                tailscale = request.allowTailscale,
+                customRemoteAddresses = request.customRemoteAddresses,
+                allowAny = request.allowAnyRemoteAddress,
+            ),
         )
 
         return runDemoServerConstruction.execute(command)

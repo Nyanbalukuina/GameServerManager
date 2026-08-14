@@ -36,6 +36,7 @@ class FileSystemDemoServerConfigurator(
                 "backupRetentionCount" to 3,
                 "gamePort" to command.gamePort,
                 "maxPlayers" to command.maxPlayers,
+                "gamePortRemoteAddresses" to command.gamePortAccess.remoteAddresses(),
             ),
         )
     }
