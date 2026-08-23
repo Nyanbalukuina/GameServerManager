@@ -52,11 +52,57 @@ tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     }
 }
 
-tasks.register<Sync>("windowsDistribution") {
-    dependsOn(tasks.bootJar)
-    into(layout.buildDirectory.dir("distributions/windows"))
+val windowsPublishDirectory = rootProject.file("../windows/publish")
+val windowsPackageInputDirectory = layout.buildDirectory.dir("jpackage/windows")
+val java21Launcher = javaToolchains.launcherFor {
+    languageVersion = JavaLanguageVersion.of(21)
+}
+
+val cleanWindowsDistribution by tasks.registering(Delete::class) {
+    delete(windowsPublishDirectory, windowsPackageInputDirectory)
+}
+
+val stageWindowsDistribution by tasks.registering(Sync::class) {
+    dependsOn(cleanWindowsDistribution, tasks.bootJar)
+    into(windowsPackageInputDirectory)
     from(tasks.bootJar.flatMap { it.archiveFile }) {
         rename { "game-server-manager.jar" }
     }
-    from(rootProject.file("../windows/GameServerManager.WindowsSetup.ps1"))
+}
+
+tasks.register<Exec>("windowsDistribution") {
+    dependsOn(stageWindowsDistribution)
+    outputs.dir(windowsPublishDirectory)
+
+    doFirst {
+        val javaHome = java21Launcher.get().metadata.installationPath.asFile
+        val executableName = if (System.getProperty("os.name").startsWith("Windows")) {
+            "jpackage.exe"
+        } else {
+            "jpackage"
+        }
+        val jpackage = javaHome.resolve("bin/$executableName")
+        require(jpackage.isFile) { "JDK 21のjpackageが見つかりません: $jpackage" }
+        windowsPublishDirectory.parentFile.mkdirs()
+        commandLine(
+            jpackage,
+            "--type", "app-image",
+            "--name", "GameServerManager",
+            "--app-version", project.version.toString().removeSuffix("-SNAPSHOT"),
+            "--vendor", "GameServerManager OSS",
+            "--description", "Palworld dedicated server manager",
+            "--input", windowsPackageInputDirectory.get().asFile,
+            "--main-jar", "game-server-manager.jar",
+            "--dest", windowsPublishDirectory,
+            "--java-options", "-Dfile.encoding=UTF-8",
+            "--win-console",
+        )
+    }
+
+    doLast {
+        copy {
+            from(rootProject.file("../windows/GameServerManager.WindowsSetup.ps1"))
+            into(windowsPublishDirectory.resolve("GameServerManager"))
+        }
+    }
 }

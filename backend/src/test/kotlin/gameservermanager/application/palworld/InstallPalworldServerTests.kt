@@ -56,6 +56,21 @@ class InstallPalworldServerTests {
     }
 
     @Test
+    fun `SteamCMDの初回自己更新後にインストールを再実行する`() {
+        val runner = FirstLaunchUpdateRunner()
+        val useCase = InstallPalworldServer(TemporaryManagedPathPolicy(tempDir), runner)
+        val steamCmdPath = prepareSteamCmd()
+        val installPath = tempDir.resolve("servers/palworld/main/runtime")
+
+        val report = useCase.execute(
+            InstallPalworldServer.Command(steamCmdPath.toString(), installPath.toString()),
+        )
+
+        assertThat(report.completed).isTrue()
+        assertThat(runner.executionCount).isEqualTo(2)
+    }
+
+    @Test
     fun `PalServer exeがなければ正常終了扱いにしない`() {
         val runner = RecordingProcessRunner(createGameExecutable = false)
         val useCase = InstallPalworldServer(TemporaryManagedPathPolicy(tempDir), runner)
@@ -113,6 +128,23 @@ class InstallPalworldServerTests {
                 Files.writeString(installPath.resolve("PalServer.exe"), "test server")
             }
             return SteamCmdProcessResult(exitCode, logPath.toString())
+        }
+    }
+
+    private class FirstLaunchUpdateRunner : SteamCmdProcessRunner {
+        var executionCount = 0
+
+        override fun run(
+            executable: Path,
+            arguments: List<String>,
+            logPath: Path,
+        ): SteamCmdProcessResult {
+            executionCount += 1
+            Files.writeString(logPath, "test log")
+            if (executionCount == 2) {
+                Files.writeString(Path.of(arguments[1]).resolve("PalServer.exe"), "test server")
+            }
+            return SteamCmdProcessResult(if (executionCount == 1) 7 else 0, logPath.toString())
         }
     }
 

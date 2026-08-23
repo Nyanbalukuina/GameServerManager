@@ -221,8 +221,10 @@ React画面を含む実行可能JARと、管理者権限が必要な限定操作
 ```powershell
 cd backend
 .\gradlew.bat windowsDistribution
-cd build\distributions\windows
+cd ..\windows\publish\GameServerManager
 ```
+
+`windows\publish\GameServerManager`へ`GameServerManager.exe`、Java 21ランタイム、React画面を内包したJAR、セットアップスクリプトをまとめて生成します。Javaを別途インストールせず、`GameServerManager.exe`から起動できます。
 
 変更内容だけを確認する場合は`Plan`を使用します。この操作はFirewallやタスクスケジューラを変更しません。
 

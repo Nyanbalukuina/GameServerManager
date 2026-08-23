@@ -34,7 +34,10 @@ class InstallPalworldServer(
             appId = PALWORLD_SERVER_APP_ID,
         )
         val logPath = installPath.resolve("steamcmd-install.log")
-        val result = processRunner.run(steamCmdExecutable, installCommand.arguments(), logPath)
+        var result = processRunner.run(steamCmdExecutable, installCommand.arguments(), logPath)
+        if (result.exitCode == STEAMCMD_FIRST_LAUNCH_EXIT_CODE) {
+            result = processRunner.run(steamCmdExecutable, installCommand.arguments(), logPath)
+        }
         check(result.exitCode == 0) {
             "SteamCMDが終了コード${result.exitCode}で失敗しました。ログ: ${result.logPath}"
         }
@@ -61,5 +64,6 @@ class InstallPalworldServer(
 
     companion object {
         const val PALWORLD_SERVER_APP_ID = 2394010
+        private const val STEAMCMD_FIRST_LAUNCH_EXIT_CODE = 7
     }
 }
