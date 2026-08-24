@@ -24,10 +24,14 @@ class ConfigurePalworldServerTests {
         val report = useCase.execute(command(installPath))
 
         assertThat(report.completed).isTrue()
-        assertThat(report.configuredKeys).contains("ServerPassword", "AdminPassword")
+        assertThat(report.configuredKeys).contains("ServerPassword", "AdminPassword", "bIsUseBackupSaveData")
         assertThat(report.toString()).doesNotContain("join-secret", "admin-secret")
         assertThat(Path.of(report.settingsPath)).content()
-            .contains("ServerPassword=\"join-secret\"", "AdminPassword=\"admin-secret\"")
+            .contains(
+                "ServerPassword=\"join-secret\"",
+                "AdminPassword=\"admin-secret\"",
+                "bIsUseBackupSaveData=True",
+            )
     }
 
     @Test
@@ -68,7 +72,7 @@ class ConfigurePalworldServerTests {
             installPath.resolve("DefaultPalWorldSettings.ini"),
             """
                 [/Script/Pal.PalGameWorldSettings]
-                OptionSettings=(ServerName="Default",ServerPlayerMaxNum=32,ServerPassword="",AdminPassword="",PublicPort=8211,RCONEnabled=False,RCONPort=25575,RESTAPIEnabled=False,RESTAPIPort=8212)
+                OptionSettings=(ServerName="Default",ServerPlayerMaxNum=32,ServerPassword="",AdminPassword="",PublicPort=8211,RCONEnabled=False,RCONPort=25575,RESTAPIEnabled=False,RESTAPIPort=8212,bIsUseBackupSaveData=False)
             """.trimIndent(),
         )
         return installPath

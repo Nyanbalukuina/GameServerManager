@@ -84,6 +84,7 @@ class FileSystemPalworldConfigurationWriterTests {
                 "RCONPort" to "25575",
                 "RESTAPIEnabled" to "True",
                 "RESTAPIPort" to "8212",
+                "bIsUseBackupSaveData" to "True",
             ),
         )
     }
@@ -104,7 +105,7 @@ class FileSystemPalworldConfigurationWriterTests {
     private fun defaultContent(): String {
         return """
             [/Script/Pal.PalGameWorldSettings]
-            OptionSettings=(Difficulty=None,ServerName="Default",ServerPlayerMaxNum=32,ServerPassword="",AdminPassword="",PublicPort=8211,RCONEnabled=False,RCONPort=25575,RESTAPIEnabled=False,RESTAPIPort=8212)
+            OptionSettings=(Difficulty=None,ServerName="Default",ServerPlayerMaxNum=32,ServerPassword="",AdminPassword="",PublicPort=8211,RCONEnabled=False,RCONPort=25575,RESTAPIEnabled=False,RESTAPIPort=8212,bIsUseBackupSaveData=False)
         """.trimIndent()
     }
 }

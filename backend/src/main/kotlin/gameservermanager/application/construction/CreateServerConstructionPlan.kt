@@ -23,8 +23,6 @@ class CreateServerConstructionPlan(
             automationEnabled = command.automationEnabled,
             shutdownTime = command.shutdownTime,
             startupTime = command.startupTime,
-            backupAfterShutdown = command.backupAfterShutdown,
-            backupRetentionCount = 3,
             gamePortAccess = createGamePortAccess.execute(command.gamePortAccess),
         )
     }
@@ -41,7 +39,6 @@ class CreateServerConstructionPlan(
         val automationEnabled: Boolean,
         val shutdownTime: String,
         val startupTime: String,
-        val backupAfterShutdown: Boolean,
         val gamePortAccess: CreateGamePortAccess.Command,
     )
 }

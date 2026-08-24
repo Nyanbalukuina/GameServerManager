@@ -32,7 +32,6 @@ const initialForm: NewServerRequest = {
   automationEnabled: false,
   shutdownTime: '04:00',
   startupTime: '09:00',
-  backupAfterShutdown: true,
   allowLocalSubnet: true,
   allowTailscale: true,
   customRemoteAddresses: '',
@@ -49,6 +48,7 @@ export function PalworldConstructionPage() {
   const [isSubmitting       , setIsSubmitting       ] = useState(false)
   const [isChecking         , setIsChecking         ] = useState(false)
   const [isConstructing     , setIsConstructing     ] = useState(false)
+  const [constructionKind   , setConstructionKind   ] = useState<'REAL' | 'DEMO' | null>(null)
   const [constructionReport , setConstructionReport ] = useState<DemoConstructionReport | null>(null)
   const [constructionError  , setConstructionError  ] = useState<string | null>(null)
   const [realReport         , setRealReport          ] = useState<ServerConstructionReport | null>(null)
@@ -74,6 +74,13 @@ export function PalworldConstructionPage() {
       setStorageError(error instanceof Error ? error.message : 'サーバー登録を取得できませんでした')
     })
   }, [])
+
+  useEffect(() => {
+    if (!isConstructing) return
+    const warnBeforeLeaving = (event: BeforeUnloadEvent) => event.preventDefault()
+    window.addEventListener('beforeunload', warnBeforeLeaving)
+    return () => window.removeEventListener('beforeunload', warnBeforeLeaving)
+  }, [isConstructing])
 
   const updateField = (field: keyof NewServerRequest, value: string | boolean) => {
     setForm((current) => ({ ...current, [field]: value }))
@@ -114,6 +121,7 @@ export function PalworldConstructionPage() {
 
   const runDemoConstruction = async () => {
     setIsConstructing(true)
+    setConstructionKind('DEMO')
     setConstructionError(null)
 
     const result = await runDemoServerConstruction(form)
@@ -129,10 +137,12 @@ export function PalworldConstructionPage() {
     }
 
     setIsConstructing(false)
+    setConstructionKind(null)
   }
 
   const runRealConstruction = async () => {
     setIsConstructing(true)
+    setConstructionKind('REAL')
     setConstructionError(null)
     const result = await constructPalworldServer(form)
     if (result.ok) {
@@ -142,6 +152,7 @@ export function PalworldConstructionPage() {
       setConstructionError(result.errors.request ?? 'Palworldサーバーを構築できませんでした')
     }
     setIsConstructing(false)
+    setConstructionKind(null)
   }
 
   const returnToForm = () => {
@@ -174,6 +185,7 @@ export function PalworldConstructionPage() {
           preflightError={preflightError}
           isChecking={isChecking}
           isConstructing={isConstructing}
+          constructionKind={constructionKind}
           constructionReport={constructionReport}
           realReport={realReport}
           constructionError={constructionError}

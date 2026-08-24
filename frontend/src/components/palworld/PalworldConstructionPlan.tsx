@@ -9,6 +9,7 @@ import type {
 import { ConstructionProgress } from '../common/ConstructionProgress'
 import { PreflightResults } from '../common/PreflightResults'
 import { AppLink } from '../common/AppLink'
+import { ConstructionInProgress } from '../common/ConstructionInProgress'
 
 type PalworldConstructionPlanProps = {
   plan: ServerConstructionPlan
@@ -16,6 +17,7 @@ type PalworldConstructionPlanProps = {
   preflightError: string | null
   isChecking: boolean
   isConstructing: boolean
+  constructionKind: 'REAL' | 'DEMO' | null
   constructionReport: DemoConstructionReport | null
   realReport: ServerConstructionReport | null
   constructionError: string | null
@@ -31,6 +33,7 @@ export function PalworldConstructionPlan({
   preflightError,
   isChecking,
   isConstructing,
+  constructionKind,
   constructionReport,
   realReport,
   constructionError,
@@ -74,12 +77,12 @@ export function PalworldConstructionPlan({
           <dd>{plan.shutdownTime}</dd>
           <dt>毎日の起動時刻</dt>
           <dd>{plan.startupTime}</dd>
-          <dt>停止後のバックアップ</dt>
-          <dd>{plan.backupAfterShutdown ? '有効' : '無効'}</dd>
-          <dt>バックアップ保持数</dt>
-          <dd>{plan.backupRetentionCount}個</dd>
         </dl>
       </section>
+
+      {isConstructing && constructionKind && (
+        <ConstructionInProgress demo={constructionKind === 'DEMO'} />
+      )}
 
       <section className="card">
         <h2>実Palworldサーバー構築</h2>
@@ -141,7 +144,7 @@ export function PalworldConstructionPlan({
       )}
 
       <p className="notice">事前検証ではフォルダー作成や設定変更を行いません。</p>
-      <button type="button" className="secondary" onClick={onReturnToForm}>
+      <button type="button" className="secondary" disabled={isConstructing} onClick={onReturnToForm}>
         入力画面へ戻る
       </button>
     </>

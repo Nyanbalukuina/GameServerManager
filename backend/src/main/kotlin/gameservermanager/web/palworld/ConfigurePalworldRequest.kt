@@ -31,5 +31,4 @@ data class ConfigurePalworldRequest(
     val shutdownTime: String = "04:00",
     @field:Pattern(regexp = "(?:[01]\\d|2[0-3]):[0-5]\\d", message = "起動時刻をHH:mm形式で入力してください")
     val startupTime: String = "09:00",
-    val backupAfterShutdown: Boolean = true,
 )

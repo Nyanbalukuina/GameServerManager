@@ -14,7 +14,5 @@ data class ServerConstructionPlan(
     val automationEnabled: Boolean,
     val shutdownTime: String,
     val startupTime: String,
-    val backupAfterShutdown: Boolean,
-    val backupRetentionCount: Int,
     val gamePortAccess: GamePortAccess,
 )

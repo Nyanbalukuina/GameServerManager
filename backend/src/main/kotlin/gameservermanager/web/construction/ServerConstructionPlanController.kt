@@ -36,7 +36,6 @@ class ServerConstructionPlanController(
                 automationEnabled = request.automationEnabled,
                 shutdownTime = request.shutdownTime,
                 startupTime = request.startupTime,
-                backupAfterShutdown = request.backupAfterShutdown,
                 gamePortAccess = CreateGamePortAccess.Command(
                     localSubnet = request.allowLocalSubnet,
                     tailscale = request.allowTailscale,

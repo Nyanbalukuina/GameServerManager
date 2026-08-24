@@ -45,6 +45,7 @@ describe('App', () => {
     expect(screen.getByLabelText('すべての接続元を許可（上級者向け）')).not.toBeChecked()
     expect(screen.getByLabelText('毎日の停止時刻')).toHaveValue('04:00')
     expect(screen.getByLabelText('毎日の起動時刻')).toHaveValue('09:00')
+    expect(screen.queryByText(/バックアップする/)).not.toBeInTheDocument()
   })
 
   it('未設定の場合はlocalhost用の初回設定画面を表示する', async () => {
@@ -80,9 +81,12 @@ describe('App', () => {
     render(<App />)
 
     expect(await screen.findByRole('heading', { name: 'Palworldサーバー管理' })).toBeInTheDocument()
-    expect(await screen.findByText('Demo Palworld')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Demo Palworld' })).toBeInTheDocument()
     expect(screen.getByText('停止中')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: '起動' })).toBeEnabled()
+    expect(await screen.findByRole('heading', { name: 'ワールド設定' })).toBeInTheDocument()
+    expect(screen.getByText('admin-password')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: '設定を編集' })).toBeEnabled()
   })
 
   it('APIが成功した場合は構築計画を表示する', async () => {
@@ -100,8 +104,6 @@ describe('App', () => {
           automationEnabled: true,
           shutdownTime: '04:00',
           startupTime: '09:00',
-          backupAfterShutdown: true,
-          backupRetentionCount: 3,
           gamePortAccess: defaultGamePortAccess(),
       }),
     ]))
@@ -148,8 +150,6 @@ describe('App', () => {
           automationEnabled: true,
           shutdownTime: '04:00',
           startupTime: '09:00',
-          backupAfterShutdown: true,
-          backupRetentionCount: 3,
           gamePortAccess: defaultGamePortAccess(),
         }),
         response({
@@ -233,8 +233,6 @@ describe('App', () => {
         automationEnabled: false,
         shutdownTime: '04:00',
         startupTime: '09:00',
-        backupAfterShutdown: true,
-        backupRetentionCount: 3,
         gamePortAccess: defaultGamePortAccess(),
       }),
       response({ canProceed: true, checks: [] }),
@@ -300,20 +298,21 @@ function authenticatedFetch(applicationResponses: Response[] = []) {
     if (url === '/api/servers/palworld') {
       return response(demoPalworldServer())
     }
+    if (url === '/api/servers/palworld/demo-settings') {
+      return response(demoPalworldSettings())
+    }
     if (url === '/api/palworld/automation') {
       return response({
         settings: {
           enabled: false,
           shutdownTime: '04:00',
           startupTime: '09:00',
-          backupAfterShutdown: true,
           gamePort: 8211,
           maxPlayers: 3,
         },
         runtime: {
           stoppedBySchedule: false,
           lastShutdownCycle: null,
-          lastBackupCycle: null,
           lastStartupCycle: null,
           lastError: null,
         },
@@ -338,6 +337,16 @@ function demoPalworldServer() {
     rconPort: 25575,
     createdAt: '2026-08-10T00:00:00Z',
     gamePortAccess: defaultGamePortAccess(),
+  }
+}
+
+function demoPalworldSettings() {
+  return {
+    serverName: 'Demo Palworld', serverDescription: '', maxPlayers: 3,
+    serverPassword: '', adminPassword: 'admin-password',
+    expRate: 1, palCaptureRate: 1, palSpawnRate: 1, enemyDropRate: 1,
+    eggHatchingTime: 2, deathPenalty: 'All', pvpEnabled: false,
+    friendlyFireEnabled: false, baseCampMaxNum: 128, baseCampWorkerMaxNum: 15,
   }
 }
 

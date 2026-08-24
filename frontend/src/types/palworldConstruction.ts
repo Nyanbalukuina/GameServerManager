@@ -10,7 +10,6 @@ export type NewServerRequest = {
   automationEnabled: boolean
   shutdownTime: string
   startupTime: string
-  backupAfterShutdown: boolean
   allowLocalSubnet: boolean
   allowTailscale: boolean
   customRemoteAddresses: string
@@ -29,8 +28,6 @@ export type ServerConstructionPlan = {
   automationEnabled: boolean
   shutdownTime: string
   startupTime: string
-  backupAfterShutdown: boolean
-  backupRetentionCount: number
   gamePortAccess: {
     localSubnet: boolean
     tailscale: boolean

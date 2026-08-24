@@ -3,6 +3,7 @@ package gameservermanager.infrastructure.palworld
 import gameservermanager.application.palworld.PalworldConfigurationWriteCommand
 import gameservermanager.application.palworld.PalworldConfigurationWriteResult
 import gameservermanager.application.palworld.PalworldConfigurationWriter
+import gameservermanager.application.palworld.PalworldSettingsIni
 import org.springframework.stereotype.Component
 import java.nio.charset.StandardCharsets
 import java.nio.file.AtomicMoveNotSupportedException
@@ -31,7 +32,7 @@ class FileSystemPalworldConfigurationWriter() : PalworldConfigurationWriter {
             command.defaultSettingsPath
         }
         val original = Files.readString(source, StandardCharsets.UTF_8)
-        val updated = updateOptionSettings(original, command.values)
+        val updated = PalworldSettingsIni.update(original, command.values)
         val backupPath = backupExistingSettings(command)
 
         Files.createDirectories(requireNotNull(command.settingsPath.parent))
@@ -51,22 +52,6 @@ class FileSystemPalworldConfigurationWriter() : PalworldConfigurationWriter {
             settingsPath = command.settingsPath.toString(),
             backupPath = backupPath?.toString(),
         )
-    }
-
-    private fun updateOptionSettings(content: String, values: Map<String, String>): String {
-        require(content.contains("OptionSettings=(")) {
-            "DefaultPalWorldSettings.iniのOptionSettingsが見つかりません"
-        }
-
-        var updated = content
-        values.forEach { (key, value) ->
-            val pattern = Regex("(?<=[(,])${Regex.escape(key)}=(?:\"(?:\\\\.|[^\"])*\"|[^,)]*)")
-            require(pattern.containsMatchIn(updated)) {
-                "Palworld設定キー${key}が見つかりません"
-            }
-            updated = pattern.replace(updated) { "$key=$value" }
-        }
-        return updated
     }
 
     private fun backupExistingSettings(command: PalworldConfigurationWriteCommand): Path? {

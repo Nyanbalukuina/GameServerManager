@@ -21,7 +21,6 @@ class RunPalworldAutomation(
     private val processManager: PalworldServerProcessManager,
     private val adminPasswordProvider: PalworldAdminPasswordProvider,
     private val stopServer: StopPalworldServer,
-    private val backupServer: BackupPalworldServer,
     private val startServer: StartPalworldServer,
     private val historyStore: PalworldOperationHistoryStore,
 ) {
@@ -60,16 +59,7 @@ class RunPalworldAutomation(
                     runtime = runtime.copy(
                         stoppedBySchedule = true,
                         lastShutdownCycle = cycle,
-                        lastError = null,
                     )
-                    store.saveRuntime(runtime)
-                }
-                if (settings.backupAfterShutdown && runtime.lastBackupCycle != cycle) {
-                    require(!isServerRunning(settings.gamePort)) {
-                        "Palworldサーバーの停止を確認できないためバックアップしません"
-                    }
-                    backupServer.execute(BackupPalworldServer.Command(installPath))
-                    runtime = runtime.copy(lastBackupCycle = cycle, lastError = null)
                     store.saveRuntime(runtime)
                 }
             } else if (runtime.stoppedBySchedule && !isServerRunning(settings.gamePort)) {
@@ -106,7 +96,6 @@ class RunPalworldAutomation(
 
         val nextAction = when {
             runtime.lastError != null -> "エラーを確認してください"
-            downtime && settings.backupAfterShutdown && runtime.lastBackupCycle != cycle -> "停止後にバックアップします"
             downtime -> "起動時刻まで停止します"
             runtime.stoppedBySchedule -> "Palworldサーバーを起動します"
             else -> "停止時刻まで稼働します"

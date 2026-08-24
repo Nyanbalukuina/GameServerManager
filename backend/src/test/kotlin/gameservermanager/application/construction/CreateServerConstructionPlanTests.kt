@@ -21,7 +21,6 @@ class CreateServerConstructionPlanTests {
                 automationEnabled = true,
                 shutdownTime = "04:00",
                 startupTime = "09:00",
-                backupAfterShutdown = true,
                 gamePortAccess = CreateGamePortAccess.Command(
                     localSubnet = true,
                     tailscale = true,
@@ -39,7 +38,6 @@ class CreateServerConstructionPlanTests {
         assertThat(plan.automationEnabled).isTrue()
         assertThat(plan.shutdownTime).isEqualTo("04:00")
         assertThat(plan.startupTime).isEqualTo("09:00")
-        assertThat(plan.backupRetentionCount).isEqualTo(3)
         assertThat(plan.gamePortAccess.remoteAddresses())
             .containsExactly("LocalSubnet", "100.64.0.0/10", "10.8.0.0/24")
     }

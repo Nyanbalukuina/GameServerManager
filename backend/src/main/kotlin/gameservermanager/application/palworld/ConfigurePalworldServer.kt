@@ -41,6 +41,7 @@ class ConfigurePalworldServer(
             "RCONPort" to command.rconPort.toString(),
             "RESTAPIEnabled" to "True",
             "RESTAPIPort" to REST_API_PORT.toString(),
+            "bIsUseBackupSaveData" to "True",
         )
         val result = configurationWriter.write(
             PalworldConfigurationWriteCommand(

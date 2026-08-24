@@ -180,10 +180,10 @@ npm.cmd run build
 - 一時領域を使ったPalworldデモ作成とデモ管理
 - 1タイトルにつき1サーバーのJSON登録
 - SteamCMD準備、Palworld導入・設定・起動・停止・更新・バックアップのバックエンド処理
-- 毎日の停止、停止後バックアップ、3世代保持、指定時刻起動
+- 毎日の指定時刻停止・起動
 - Windows Firewallと自動起動タスクを設定する配布用PowerShell
 
-実Palworldを画面から一括作成するフローを実装済みです。事前検証成功後に、SteamCMD準備、Palworld導入、設定保存、自動運転保存、起動確認、管理登録を順番に実行します。ゲームサーバー作成・削除に連動するFirewall規則の登録・解除は未接続です。SteamCMD以降の実機確認は、Steamネットワークへ直接接続できるゲームサーバー予定マシンで行います。ARK、Minecraft、既存サーバー取り込みも今後の対応です。
+実Palworldを画面から一括作成するフローを実装済みです。事前検証成功後に、SteamCMD準備、Palworld導入、設定保存、自動運転保存、ゲーム用Firewall規則の登録、起動確認、管理登録を順番に実行します。起動または登録に失敗した場合は追加したFirewall規則を解除します。SteamCMD以降とFirewall補助タスクの実機確認は、ゲームサーバー予定マシンで行います。ARK、Minecraft、既存サーバー取り込みも今後の対応です。
 
 初期版ではDBを使用せず、認証、サーバー登録、自動運転、実行状態、操作履歴を管理ルート内のJSONまたはJSON Linesへ保存します。
 
@@ -197,9 +197,9 @@ Palworldサーバーの新規作成画面で、毎日の停止時刻と起動時
 
 デモ管理画面では、実プロセスを起動せずに起動・停止・再起動の状態遷移を確認できます。`PALWORLD`と入力して削除すると、`GameServerManagerDemo`一時領域とPalworldの登録だけを削除し、再びPalworldを作成できる状態へ戻します。
 
-自動運転を有効にすると、停止時刻にワールドを保存してサーバーを停止し、停止確認後にバックアップを作成します。バックアップ完了後も起動時刻までは停止を維持し、起動時刻になるとサーバーを起動します。
+自動運転を有効にすると、停止時刻にワールドを保存してサーバーを停止します。指定した停止時間帯だけ停止を維持し、起動時刻になるとサーバーを起動します。
 
-バックアップは `backups/palworld-main/world` に保存し、最新3個だけを保持します。4個目を作成した時点で最も古いバックアップを削除します。
+Palworld本体の自動バックアップは常に有効化し、頻度と世代管理はPalworldに任せます。Game Server Manager独自のZIPバックアップは作成しません。
 
 自動運転設定は `config/palworld-main-automation.json`、実行状態は `config/palworld-main-automation-runtime.json` に保存します。管理者パスワードは自動運転設定へ保存せず、停止処理の直前にPalworld本体の `PalWorldSettings.ini` から読み取ります。
 
@@ -212,7 +212,7 @@ Palworld作成時に、プレイヤー接続用UDPポートの接続元を選択
 - 手動指定: IPv4アドレスまたはCIDRを複数指定可能
 - すべての接続元: `Any`。選択時はほかの範囲を無効化
 
-選択内容は構築計画、デモ設定、`config/servers.json`のサーバー登録へ保存します。デモ作成ではWindows Firewallを変更しません。管理画面、RCON、Palworld REST APIの公開範囲とは分離して扱います。
+選択内容は構築計画、デモ設定、`config/servers.json`のサーバー登録へ保存します。実構築では管理者権限のFirewall補助タスクがゲーム用UDP受信規則へ反映し、デモ作成ではWindows Firewallを変更しません。管理画面、RCON、Palworld REST APIの公開範囲とは分離して扱います。
 
 ## Windows Firewallと自動起動
 
@@ -232,9 +232,7 @@ cd ..\windows\publish\GameServerManager
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\GameServerManager.WindowsSetup.ps1 `
   -Action Plan `
   -StorageRoot C:\GameServerManager `
-  -ManagementPort 8080 `
-  -GamePort 8211 `
-  -GameRemoteAddress "LocalSubnet,100.64.0.0/10"
+  -ManagementPort 8080
 ```
 
 登録は管理者として開いたPowerShellで実行します。
@@ -243,18 +241,16 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\GameServerManager.Wind
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\GameServerManager.WindowsSetup.ps1 `
   -Action Install `
   -StorageRoot C:\GameServerManager `
-  -ManagementPort 8080 `
-  -GamePort 8211 `
-  -GameRemoteAddress "LocalSubnet,100.64.0.0/10"
+  -ManagementPort 8080
 ```
 
 `Install`は次の限定操作だけを行います。
 
 - 管理画面用TCPポートをLANとTailscaleアドレス範囲から許可する
-- Palworldゲーム用UDPポートをLANとTailscaleアドレス範囲から許可する
+- ゲーム構築時のUDP規則だけを操作するFirewall補助タスクを登録する
 - 実行可能JARを`C:\GameServerManager\app`へ配置する
 - 制限付きユーザーでWindows起動時に実行する固定名タスクを登録する
 
 RCONポートとPalworld REST APIポートは外部へ公開しません。状態確認は`-Action Status`、解除は管理者PowerShellで`-Action Uninstall`を使用します。解除してもSteamCMD、ゲーム本体、ワールド、バックアップ、認証・自動運転設定は削除しません。
 
-開発PCではFirewall規則、制限付きユーザーの起動タスク、React画面を含むJARの起動を確認済みです。確認時に登録した規則とタスクは削除済みです。現在のセットアップは配布物を手動で実行する方式であり、実Palworldの作成・削除との自動連動は今後実装します。デモ操作ではFirewallとタスクスケジューラを変更しません。
+実Palworldの構築時には、選択したゲームポートと接続元でUDP受信規則を追加します。起動または管理登録に失敗した場合は追加した規則を解除します。デモ操作ではFirewallとタスクスケジューラを変更しません。

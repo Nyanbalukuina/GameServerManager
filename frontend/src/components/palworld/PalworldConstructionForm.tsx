@@ -174,15 +174,6 @@ export function PalworldConstructionForm({
             onChange={(event) => onFieldChange('startupTime', event.target.value)}
           />
           <p className="error">{errors.startupTime}</p>
-          <label className="automation-toggle">
-            <input
-              type="checkbox"
-              checked={form.backupAfterShutdown}
-              onChange={(event) => onFieldChange('backupAfterShutdown', event.target.checked)}
-            />
-            停止後にバックアップする
-          </label>
-          <p className="notice">バックアップは最新3個を保持し、古いものから自動削除します。</p>
         </section>
 
         {errors.request && <p className="error request-error">{errors.request}</p>}

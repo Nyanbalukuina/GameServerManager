@@ -33,11 +33,11 @@ class ServerConstructionPlanControllerTests @Autowired constructor(
             jsonPath("$.automationEnabled") { value(true) }
             jsonPath("$.shutdownTime") { value("04:00") }
             jsonPath("$.startupTime") { value("09:00") }
-            jsonPath("$.backupAfterShutdown") { value(true) }
-            jsonPath("$.backupRetentionCount") { value(3) }
             jsonPath("$.gamePortAccess.localSubnet") { value(true) }
             jsonPath("$.gamePortAccess.tailscale") { value(true) }
             jsonPath("$.adminPassword") { doesNotExist() }
+            jsonPath("$.backupAfterShutdown") { doesNotExist() }
+            jsonPath("$.backupRetentionCount") { doesNotExist() }
         }
     }
 
@@ -92,8 +92,7 @@ class ServerConstructionPlanControllerTests @Autowired constructor(
               "adminPassword": "admin-password",
               "automationEnabled": true,
               "shutdownTime": "04:00",
-              "startupTime": "09:00",
-              "backupAfterShutdown": true
+              "startupTime": "09:00"
             }
         """.trimIndent()
     }

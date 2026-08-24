@@ -14,7 +14,7 @@ class FileSystemDemoServerConfiguratorTests {
     lateinit var tempDir: Path
 
     @Test
-    fun `パスワードを残さずデモ設定と自動運転設定を保存する`() {
+    fun `管理画面で確認できるようパスワードをデモ設定へ保存する`() {
         FileSystemDemoServerConfigurator(jacksonObjectMapper()).configure(
             DemoServerConfigurationCommand(
                 workspacePath = tempDir.toString(),
@@ -22,24 +22,27 @@ class FileSystemDemoServerConfiguratorTests {
                 gamePort = 8211,
                 rconPort = 25575,
                 maxPlayers = 3,
-                serverPasswordConfigured = true,
-                adminPasswordConfigured = true,
+                serverPassword = "server-password",
+                adminPassword = "admin-password",
                 automationEnabled = true,
                 shutdownTime = "04:00",
                 startupTime = "09:00",
-                backupAfterShutdown = true,
                 gamePortAccess = GamePortAccess(),
             ),
         )
 
         val settings = Files.readString(
-            tempDir.resolve("servers/palworld/main/runtime/Pal/Saved/Config/WindowsServer/PalWorldSettings.demo.ini"),
+            tempDir.resolve("servers/palworld/main/runtime/Pal/Saved/Config/WindowsServer/PalWorldSettings.ini"),
         )
         val automation = Files.readString(tempDir.resolve("config/palworld-main-automation.demo.json"))
-        assertThat(settings).contains("AdminPassword=<configured>").doesNotContain("admin-password")
+        assertThat(settings).contains(
+            "OptionSettings=(",
+            "ServerPassword=\"server-password\"",
+            "AdminPassword=\"admin-password\"",
+        )
+        assertThat(tempDir.resolve("servers/palworld/main/runtime/DefaultPalWorldSettings.ini")).exists()
         assertThat(automation).contains(
             "\"enabled\" : true",
-            "\"backupRetentionCount\" : 3",
             "\"100.64.0.0/10\"",
         )
     }

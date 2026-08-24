@@ -16,3 +16,23 @@ export type GameServerRegistration = {
     allowAny: boolean
   }
 }
+
+export type PalworldSettings = {
+  serverName: string
+  serverDescription: string
+  maxPlayers: number
+  serverPassword: string
+  adminPassword: string
+  expRate: number
+  palCaptureRate: number
+  palSpawnRate: number
+  enemyDropRate: number
+  eggHatchingTime: number
+  deathPenalty: 'None' | 'Item' | 'ItemAndEquipment' | 'All'
+  pvpEnabled: boolean
+  friendlyFireEnabled: boolean
+  baseCampMaxNum: number
+  baseCampWorkerMaxNum: number
+}
+
+export type UpdatePalworldSettings = PalworldSettings

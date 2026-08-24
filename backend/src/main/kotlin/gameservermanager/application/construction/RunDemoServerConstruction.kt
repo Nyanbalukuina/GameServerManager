@@ -48,12 +48,11 @@ class RunDemoServerConstruction(
                 gamePort = command.gamePort,
                 rconPort = command.rconPort,
                 maxPlayers = command.maxPlayers,
-                serverPasswordConfigured = command.serverPassword.isNotBlank(),
-                adminPasswordConfigured = command.adminPassword.isNotBlank(),
+                serverPassword = command.serverPassword,
+                adminPassword = command.adminPassword,
                 automationEnabled = command.automationEnabled,
                 shutdownTime = command.shutdownTime,
                 startupTime = command.startupTime,
-                backupAfterShutdown = command.backupAfterShutdown,
                 gamePortAccess = gamePortAccess,
             ),
         )
@@ -83,7 +82,7 @@ class RunDemoServerConstruction(
             ),
             completed("data", "管理データの準備", "設定・ワールド・ログ用フォルダーを作成しました"),
             completed("configuration", "Palworld設定の保存", "パスワードを伏せたデモ設定を保存しました"),
-            completed("automation", "自動運転設定の保存", "停止・バックアップ・起動設定をデモ保存しました"),
+            completed("automation", "自動運転設定の保存", "停止・起動設定をデモ保存しました"),
         )
 
         return DemoConstructionReport(
@@ -110,7 +109,6 @@ class RunDemoServerConstruction(
         val automationEnabled: Boolean,
         val shutdownTime: String,
         val startupTime: String,
-        val backupAfterShutdown: Boolean,
         val gamePortAccess: CreateGamePortAccess.Command,
     )
 

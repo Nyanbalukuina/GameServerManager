@@ -81,7 +81,8 @@ label {
   font-weight: 650;
 }
 
-input {
+input,
+select {
   box-sizing: border-box;
   width: 100%;
   padding: 11px 13px;
@@ -92,13 +93,33 @@ input {
   font: inherit;
 }
 
-input:focus {
+input:focus,
+select:focus {
   border-color: #60a5fa;
   outline: 2px solid rgb(96 165 250 / 25%);
 }
 
 input[aria-invalid='true'] {
   border-color: #f87171;
+}
+
+.check-field {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 18px;
+}
+
+.check-field input {
+  width: auto;
+}
+
+.success-notice {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  background: rgb(22 101 52 / 35%);
+  color: #86efac;
 }
 
 .error {
@@ -301,4 +322,35 @@ dd {
 
 .danger-zone button {
   background: #b91c1c;
+}
+
+.construction-running {
+  border-color: #2563eb;
+  background: rgb(30 64 175 / 18%);
+}
+
+.construction-running-heading {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.spinner {
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  border: 4px solid #374151;
+  border-top-color: #60a5fa;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.pending-step-list {
+  display: grid;
+  gap: 8px;
+  color: #d1d5db;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

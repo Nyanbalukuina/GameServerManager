@@ -13,7 +13,6 @@ class ConfigurePalworldAutomation(
             enabled = false,
             shutdownTime = "04:00",
             startupTime = "09:00",
-            backupAfterShutdown = true,
             gamePort = 8211,
             maxPlayers = 3,
         )
@@ -36,7 +35,6 @@ class ConfigurePalworldAutomation(
             enabled = command.enabled,
             shutdownTime = shutdownTime.toString(),
             startupTime = startupTime.toString(),
-            backupAfterShutdown = command.backupAfterShutdown,
             gamePort = command.gamePort,
             maxPlayers = command.maxPlayers,
         )
@@ -56,7 +54,6 @@ class ConfigurePalworldAutomation(
         val enabled: Boolean,
         val shutdownTime: String,
         val startupTime: String,
-        val backupAfterShutdown: Boolean,
         val gamePort: Int,
         val maxPlayers: Int,
     )

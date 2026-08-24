@@ -55,7 +55,6 @@ class RunDemoServerConstructionTests {
             automationEnabled = true,
             shutdownTime = "04:00",
             startupTime = "09:00",
-            backupAfterShutdown = true,
             gamePortAccess = CreateGamePortAccess.Command(
                 localSubnet = true,
                 tailscale = true,

@@ -41,7 +41,6 @@ class PalworldConfigurationController(
                 enabled = request.automationEnabled,
                 shutdownTime = request.shutdownTime,
                 startupTime = request.startupTime,
-                backupAfterShutdown = request.backupAfterShutdown,
                 gamePort = requireNotNull(request.gamePort),
                 maxPlayers = requireNotNull(request.maxPlayers),
             ),

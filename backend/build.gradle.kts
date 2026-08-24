@@ -101,7 +101,10 @@ tasks.register<Exec>("windowsDistribution") {
 
     doLast {
         copy {
-            from(rootProject.file("../windows/GameServerManager.WindowsSetup.ps1"))
+            from(
+                rootProject.file("../windows/GameServerManager.WindowsSetup.ps1"),
+                rootProject.file("../windows/GameServerManager.FirewallHelper.ps1"),
+            )
             into(windowsPublishDirectory.resolve("GameServerManager"))
         }
     }

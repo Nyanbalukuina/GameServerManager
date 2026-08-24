@@ -1,5 +1,5 @@
 import { apiFetch } from './http'
-import type { GameServerRegistration } from '../types/gameServer'
+import type { GameServerRegistration, PalworldSettings, UpdatePalworldSettings } from '../types/gameServer'
 
 export async function getGameServers(): Promise<GameServerRegistration[]> {
   const response = await apiFetch('/api/servers')
@@ -23,6 +23,23 @@ export async function operateDemoPalworldServer(
   })
   if (!response.ok) throw new Error('デモサーバーを操作できませんでした')
   return await response.json() as GameServerRegistration
+}
+
+export async function getDemoPalworldSettings(): Promise<PalworldSettings> {
+  const response = await apiFetch('/api/servers/palworld/demo-settings')
+  if (!response.ok) throw new Error('Palworld設定を取得できませんでした')
+  return await response.json() as PalworldSettings
+}
+
+export async function updateDemoPalworldSettings(settings: UpdatePalworldSettings): Promise<PalworldSettings> {
+  const response = await apiFetch('/api/servers/palworld/demo-settings', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(settings),
+  })
+  if (!response.ok) {
+    const body = await response.json() as { errors?: Record<string, string> }
+    throw new Error(Object.values(body.errors ?? {})[0] ?? 'Palworld設定を保存できませんでした')
+  }
+  return await response.json() as PalworldSettings
 }
 
 export async function deleteDemoPalworldServer(confirmation: string): Promise<void> {
