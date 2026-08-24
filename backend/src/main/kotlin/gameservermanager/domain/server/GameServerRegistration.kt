@@ -14,4 +14,8 @@ data class GameServerRegistration(
     val rconPort: Int,
     val createdAt: Instant,
     val gamePortAccess: GamePortAccess = GamePortAccess(),
+    val peerPort: Int? = null,
+    val queryPort: Int? = null,
+    val map: String? = null,
+    val maxPlayers: Int? = null,
 )

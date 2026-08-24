@@ -1,5 +1,5 @@
 export type GameServerRegistration = {
-  game: 'PALWORLD' | 'ARK' | 'MINECRAFT'
+  game: 'PALWORLD' | 'ASA' | 'MINECRAFT'
   serverId: string
   mode: 'DEMO' | 'REAL'
   state: 'STOPPED' | 'RUNNING'
@@ -8,6 +8,10 @@ export type GameServerRegistration = {
   workspacePath: string
   gamePort: number
   rconPort: number
+  peerPort?: number
+  queryPort?: number
+  map?: string
+  maxPlayers?: number
   createdAt: string
   gamePortAccess: {
     localSubnet: boolean

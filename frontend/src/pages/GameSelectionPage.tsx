@@ -15,6 +15,7 @@ export function GameSelectionPage() {
   }, [])
 
   const palworld = servers?.find((server) => server.game === 'PALWORLD')
+  const asa = servers?.find((server) => server.game === 'ASA')
 
   return (
     <main>
@@ -38,10 +39,11 @@ export function GameSelectionPage() {
             <span>未作成・新しいPalworld専用サーバーを構築します</span>
           </AppLink>
         ))}
-        <div className="game-card unavailable" aria-disabled="true">
-          <strong>ARK</strong>
-          <span>未作成・今後対応予定です</span>
-        </div>
+        {servers !== null && (asa ? (
+          <AppLink className="game-card" href="/servers/asa"><strong>ARK: Survival Ascended</strong><span>作成済み・管理画面を開く</span></AppLink>
+        ) : (
+          <AppLink className="game-card" href="/servers/new/asa"><strong>ARK: Survival Ascended</strong><span>未作成・新しいARK: Survival Ascended専用サーバーを構築します</span></AppLink>
+        ))}
         <div className="game-card unavailable" aria-disabled="true">
           <strong>Minecraft</strong>
           <span>未作成・今後対応予定です</span>

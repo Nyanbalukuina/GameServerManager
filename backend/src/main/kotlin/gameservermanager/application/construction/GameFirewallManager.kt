@@ -5,6 +5,7 @@ data class GameFirewallRuleCommand(
     val serverId: String,
     val gamePort: Int,
     val remoteAddresses: List<String>,
+    val protocol: String = "UDP",
 )
 
 interface GameFirewallManager {

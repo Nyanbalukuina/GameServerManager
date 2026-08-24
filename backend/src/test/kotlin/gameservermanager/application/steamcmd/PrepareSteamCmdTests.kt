@@ -12,9 +12,11 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 
 class PrepareSteamCmdTests {
+    // テストで使用する一時フォルダーを受け取る。
     @TempDir
     lateinit var tempDir: Path
 
+    // SteamCMDの準備処理を実行し、結果を検証する。
     @Test
     fun `公式ZIP相当のファイルを安全に展開して一時ファイルを削除する`() {
         val policy = WindowsManagedPathPolicy(StorageProperties(tempDir.toString()))

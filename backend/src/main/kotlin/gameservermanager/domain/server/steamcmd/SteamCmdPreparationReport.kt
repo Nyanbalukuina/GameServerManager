@@ -1,4 +1,4 @@
-package gameservermanager.domain.steamcmd
+package gameservermanager.domain.server.steamcmd
 
 data class SteamCmdPreparationReport(
     val completed: Boolean,

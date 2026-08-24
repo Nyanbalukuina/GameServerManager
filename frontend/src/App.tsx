@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { GameSelectionPage } from './pages/GameSelectionPage'
 import { PalworldConstructionPage } from './pages/palworld/PalworldConstructionPage'
 import { PalworldManagementPage } from './pages/palworld/PalworldManagementPage'
+import { AsaConstructionPage } from './pages/asa/AsaConstructionPage'
+import { AsaManagementPage } from './pages/asa/AsaManagementPage'
 import { AuthenticationPage } from './pages/AuthenticationPage'
 import { getAuthenticationStatus, logout } from './api/authentication'
 import type { AuthenticationStatus } from './types/authentication'
@@ -55,6 +57,10 @@ function App() {
       return <GameSelectionPage />
     case '/servers/new/palworld':
       return <PalworldConstructionPage />
+    case '/servers/new/asa':
+      return <AsaConstructionPage />
+    case '/servers/asa':
+      return <AsaManagementPage />
     case '/servers/palworld':
       return <PalworldManagementPage />
     default:

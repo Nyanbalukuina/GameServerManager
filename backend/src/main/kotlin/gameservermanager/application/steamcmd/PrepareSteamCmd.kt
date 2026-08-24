@@ -1,7 +1,7 @@
 package gameservermanager.application.steamcmd
 
 import gameservermanager.application.preflight.ManagedPathPolicy
-import gameservermanager.domain.steamcmd.SteamCmdPreparationReport
+import gameservermanager.domain.server.steamcmd.SteamCmdPreparationReport
 import org.springframework.stereotype.Service
 import java.nio.file.Files
 import java.nio.file.Path

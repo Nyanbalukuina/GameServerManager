@@ -46,11 +46,15 @@ try {
     if ($request.operation -notin @('APPLY', 'REMOVE')) {
         throw '許可されていないFirewall操作です'
     }
-    if ($request.ruleName -notmatch '^GameServerManager-Game-[A-Za-z0-9-]{1,64}-[A-Za-z0-9-]{1,64}-UDP-\d{1,5}$') {
+    if ($request.ruleName -notmatch '^GameServerManager-Game-[A-Za-z0-9-]{1,64}-[A-Za-z0-9-]{1,64}-(UDP|TCP)-\d{1,5}$') {
         throw 'Firewall規則名が不正です'
     }
+    $protocol = [string]$request.protocol
+    if ($protocol -notin @('UDP', 'TCP')) {
+        throw 'Firewallプロトコルが不正です'
+    }
     $localPort = [int]$request.localPort
-    if ($localPort -lt 1 -or $localPort -gt 65535 -or -not $request.ruleName.EndsWith("-UDP-$localPort")) {
+    if ($localPort -lt 1 -or $localPort -gt 65535 -or -not $request.ruleName.EndsWith("-$protocol-$localPort")) {
         throw 'ゲームポートが不正です'
     }
     $remoteAddresses = @($request.remoteAddresses)
@@ -72,7 +76,7 @@ try {
             -DisplayName $request.ruleName `
             -Direction Inbound `
             -Action Allow `
-            -Protocol UDP `
+            -Protocol $protocol `
             -LocalPort $localPort `
             -RemoteAddress $remoteAddresses | Out-Null
         Write-Response $requestId $true 'Firewall規則を追加しました'

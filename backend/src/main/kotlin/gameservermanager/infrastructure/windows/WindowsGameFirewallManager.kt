@@ -22,17 +22,17 @@ class WindowsGameFirewallManager(
     override fun apply(command: GameFirewallRuleCommand): String {
         validate(command)
         val ruleName = ruleName(command)
-        execute("APPLY", ruleName, command.gamePort, command.remoteAddresses)
+        execute("APPLY", ruleName, command.gamePort, command.remoteAddresses, command.protocol)
         return ruleName
     }
 
     @Synchronized
     override fun remove(command: GameFirewallRuleCommand) {
         validate(command)
-        execute("REMOVE", ruleName(command), command.gamePort, command.remoteAddresses)
+        execute("REMOVE", ruleName(command), command.gamePort, command.remoteAddresses, command.protocol)
     }
 
-    private fun execute(operation: String, ruleName: String, port: Int, addresses: List<String>) {
+    private fun execute(operation: String, ruleName: String, port: Int, addresses: List<String>, protocol: String) {
         require(System.getProperty("os.name").startsWith("Windows")) {
             "Windows Firewall操作はWindowsでのみ実行できます"
         }
@@ -43,7 +43,7 @@ class WindowsGameFirewallManager(
         Files.deleteIfExists(responsePath)
         objectMapper.writerWithDefaultPrettyPrinter().writeValue(
             requestPath.toFile(),
-            Request(requestId, operation, ruleName, port, addresses),
+            Request(requestId, operation, ruleName, port, addresses, protocol),
         )
 
         val process = ProcessBuilder(
@@ -73,10 +73,11 @@ class WindowsGameFirewallManager(
         require(command.serverId.matches(IDENTIFIER_PATTERN)) { "サーバー識別子が不正です" }
         require(command.gamePort in 1..65535) { "ゲームポートが不正です" }
         require(command.remoteAddresses.isNotEmpty()) { "Firewallの接続元を1つ以上指定してください" }
+        require(command.protocol in setOf("UDP", "TCP")) { "Firewallプロトコルが不正です" }
     }
 
     private fun ruleName(command: GameFirewallRuleCommand): String {
-        return "GameServerManager-Game-${command.game}-${command.serverId}-UDP-${command.gamePort}"
+        return "GameServerManager-Game-${command.game}-${command.serverId}-${command.protocol}-${command.gamePort}"
     }
 
     private data class Request(
@@ -85,6 +86,7 @@ class WindowsGameFirewallManager(
         val ruleName: String,
         val localPort: Int,
         val remoteAddresses: List<String>,
+        val protocol: String,
     )
 
     private data class Response(

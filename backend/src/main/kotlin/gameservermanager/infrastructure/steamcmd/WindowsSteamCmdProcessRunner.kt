@@ -1,7 +1,7 @@
 package gameservermanager.infrastructure.steamcmd
 
-import gameservermanager.application.palworld.SteamCmdProcessResult
-import gameservermanager.application.palworld.SteamCmdProcessRunner
+import gameservermanager.application.steamcmd.SteamCmdProcessResult
+import gameservermanager.application.steamcmd.SteamCmdProcessRunner
 import org.springframework.stereotype.Component
 import java.nio.file.Files
 import java.nio.file.Path
@@ -10,6 +10,8 @@ import java.util.concurrent.TimeUnit
 
 @Component
 class WindowsSteamCmdProcessRunner : SteamCmdProcessRunner {
+    // 複数のゲームがSteamCMDを同時に実行しないようにする。
+    @Synchronized
     override fun run(
         executable: Path,
         arguments: List<String>,

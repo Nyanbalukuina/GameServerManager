@@ -2,9 +2,10 @@ import { useEffect, useState } from 'react'
 
 type ConstructionInProgressProps = {
   demo: boolean
+  game?: 'PALWORLD' | 'ASA'
 }
 
-export function ConstructionInProgress({ demo }: ConstructionInProgressProps) {
+export function ConstructionInProgress({ demo, game = 'PALWORLD' }: ConstructionInProgressProps) {
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
 
   useEffect(() => {
@@ -14,14 +15,16 @@ export function ConstructionInProgress({ demo }: ConstructionInProgressProps) {
 
   const steps = demo
     ? ['入力内容の確認', 'デモ用SteamCMDの準備', 'デモサーバーの配置', '設定と管理データの保存']
-    : ['SteamCMDの準備・ダウンロード', 'Palworld Dedicated Serverのダウンロード', 'サーバー設定の保存', '自動運転設定の保存', 'Windows Firewallの設定', 'サーバー起動とポート待受確認', '管理対象への登録']
+    : game === 'ASA'
+      ? ['SteamCMDの準備・ダウンロード', 'ARK: Survival Ascended Dedicated Serverのダウンロード', 'GameUserSettings.iniの保存', 'Windows Firewallの設定', 'サーバー起動とポート待受確認', '管理対象への登録']
+      : ['SteamCMDの準備・ダウンロード', 'Palworld Dedicated Serverのダウンロード', 'サーバー設定の保存', '自動運転設定の保存', 'Windows Firewallの設定', 'サーバー起動とポート待受確認', '管理対象への登録']
 
   return (
     <section className="card construction-running" role="status" aria-live="polite">
       <div className="construction-running-heading">
         <span className="spinner" aria-hidden="true" />
         <div>
-          <h2>{demo ? 'デモサーバーを作成しています' : 'Palworldサーバーを構築しています'}</h2>
+          <h2>{demo ? `${game === 'ASA' ? 'ARK: Survival Ascended' : 'Palworld'}デモサーバーを作成しています` : `${game === 'ASA' ? 'ARK: Survival Ascended' : 'Palworld'}サーバーを構築しています`}</h2>
           <p>処理は継続中です。完了するまでこの画面を閉じないでください。</p>
         </div>
       </div>

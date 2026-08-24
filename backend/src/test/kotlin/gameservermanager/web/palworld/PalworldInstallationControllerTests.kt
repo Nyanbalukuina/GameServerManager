@@ -1,8 +1,8 @@
 package gameservermanager.web.palworld
 
 import gameservermanager.application.palworld.InstallPalworldServer
-import gameservermanager.application.palworld.SteamCmdProcessResult
-import gameservermanager.application.palworld.SteamCmdProcessRunner
+import gameservermanager.application.steamcmd.SteamCmdProcessResult
+import gameservermanager.application.steamcmd.SteamCmdProcessRunner
 import gameservermanager.application.preflight.ManagedPathPolicy
 import gameservermanager.web.error.ApiExceptionHandler
 import org.junit.jupiter.api.Test

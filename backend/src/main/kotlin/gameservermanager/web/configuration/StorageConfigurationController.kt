@@ -17,6 +17,7 @@ class StorageConfigurationController(
         return StoragePathsResponse(
             root = root.toString(),
             palworldInstallPath = root.resolve("servers/palworld/main/runtime").toString(),
+            asaInstallPath = root.resolve("servers/asa/main/runtime").toString(),
             steamCmdPath = root.resolve("tools/steamcmd").toString(),
         )
     }

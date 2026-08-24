@@ -1,7 +1,7 @@
 package gameservermanager.web.steamcmd
 
 import gameservermanager.application.steamcmd.PrepareSteamCmd
-import gameservermanager.domain.steamcmd.SteamCmdPreparationReport
+import gameservermanager.domain.server.steamcmd.SteamCmdPreparationReport
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
