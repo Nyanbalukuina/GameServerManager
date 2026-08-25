@@ -1,126 +1,86 @@
 # GameServerManager
 
-ブラウザからゲーム専用サーバーを安全に管理するためのOSSです。
+Windows上のゲーム専用サーバーを、ブラウザから構築・管理するためのアプリケーションです。
 
-## 必要環境
+SteamCMDの準備、ゲームサーバーのインストール、設定ファイル生成、Windows Firewall設定、起動・停止までを一つの画面から実行できます。
 
+> [!IMPORTANT]
+> 現在は開発中です。主要機能は実装済みですが、実ゲームサーバーとクライアントを使用した受入検証を継続しています。
+
+## 対応ゲーム
+
+| ゲーム | 対応内容 |
+|---|---|
+| ARK: Survival Ascended | 構築、起動、状態確認、RCONによる保存・停止、再起動、削除、デモモード |
+| Palworld | 構築、起動、状態確認、保存・停止、再起動、更新、バックアップ、自動運転、デモモード |
+
+現行仕様では、1タイトルにつき1サーバーを管理します。
+
+## 主な機能
+
+- ブラウザからのゲームサーバー構築・管理
+- 構築前のWindows環境、保存先、空き容量、ポート検証
+- SteamCMDのダウンロード、再利用、ゲームサーバーのインストール
+- ゲームごとの初期設定ファイル生成
+- 接続元を限定したWindows Firewall受信規則
+- サーバーの起動、状態確認、安全停止、再起動
+- Cookieセッション認証とCSRF保護
+- 実環境を変更せず操作を確認できるデモモード
+- 管理データ、ログ、バックアップのローカル保存
+
+## 技術スタック
+
+- Kotlin 2.2 / Java 21 / Spring Boot 3.5
+- React 19 / TypeScript 6 / Vite 8
+- Gradle Kotlin DSL / npm
+- JUnit 5 / Spring Boot Test / Vitest / Testing Library
+- PowerShell / Windows Firewall / タスクスケジューラ
+
+## システム構成
+
+```text
+Reactフロントエンド
+  ↓ REST API
+Spring Bootバックエンド
+  ├─ 認証・入力検証・構築処理
+  ├─ SteamCMD・プロセス管理
+  ├─ 設定・ログ・バックアップ
+  └─ Windows Firewall連携
+       ↓
+Windows / SteamCMD / ゲーム専用サーバー
+```
+
+フロントエンドからPowerShellやSteamCMDを直接実行せず、すべてバックエンドAPIを経由します。
+
+## 開発環境
+
+### 必要なもの
+
+- Windows
 - JDK 21
 - Node.js 24
 - npm
 
-## 構成
+Gradle本体のインストールは不要です。同梱のGradle Wrapperを使用します。
 
-```text
-GameServerManager/
-├─ backend/
-│  └─ src/
-│     ├─ main/
-│     │  ├─ kotlin/gameservermanager/
-│     │  │  ├─ web/
-│     │  │  │  ├─ authentication/
-│     │  │  │  ├─ palworld/
-│     │  │  │  ├─ construction/
-│     │  │  │  ├─ configuration/
-│     │  │  │  ├─ preflight/
-│     │  │  │  ├─ server/
-│     │  │  │  ├─ steamcmd/
-│     │  │  │  └─ error/
-│     │  │  ├─ application/
-│     │  │  │  ├─ authentication/
-│     │  │  │  ├─ palworld/
-│     │  │  │  ├─ construction/
-│     │  │  │  ├─ preflight/
-│     │  │  │  ├─ server/
-│     │  │  │  └─ steamcmd/
-│     │  │  ├─ domain/
-│     │  │  │  ├─ authentication/
-│     │  │  │  ├─ palworld/
-│     │  │  │  ├─ construction/
-│     │  │  │  ├─ preflight/
-│     │  │  │  ├─ server/
-│     │  │  │  └─ steamcmd/
-│     │  │  └─ infrastructure/
-│     │  │     ├─ authentication/
-│     │  │     ├─ palworld/
-│     │  │     ├─ server/
-│     │  │     ├─ steamcmd/
-│     │  │     ├─ windows/
-│     │  │     └─ demo/
-│     │  └─ resources/
-│     └─ test/kotlin/gameservermanager/
-└─ frontend/
-   └─ src/
-      ├─ pages/
-      │  └─ palworld/
-      ├─ components/
-      │  ├─ common/
-      │  └─ palworld/
-      ├─ api/
-      ├─ types/
-      ├─ styles/
-      └─ App.tsx
-```
-
-バックエンドは`web`、`application`、`domain`、`infrastructure`の役割で分け、その中を機能単位で整理します。Palworld専用処理は各レイヤーの`palworld`へまとめ、SteamCMDなど他ゲームでも利用できる処理は共通機能として分離します。
-
-- `web`: REST API、リクエスト、APIエラー
-- `application`: ユースケースと処理手順
-- `domain`: 構築計画や検証結果などの業務モデル
-- `infrastructure`: Windows、ファイル、ポートなど外部環境へのアクセス
-
-フロントエンドは`App.tsx`をルーティングの入口とし、`pages`、`components`、`api`、`types`、`styles`の役割単位で整理します。
-
-## 管理データ
-
-既定の管理ルートは`C:\GameServerManager`です。
-
-```text
-C:\GameServerManager\
-├─ tools\
-│  └─ steamcmd\
-├─ servers\
-│  └─ palworld\
-│     └─ main\
-│        └─ runtime\
-├─ backups\
-└─ logs\
-```
-
-ゲーム本体は`servers`、SteamCMDなどの共用ツールは`tools`配下だけを許可します。ワールド・設定・ゲームログはゲーム本体配下、バックアップは`backups`へ分離します。
-
-画面から行うデモ構築では実SteamCMDを起動せず、`%TEMP%\GameServerManagerDemo`へ同じ構成の小さな模擬ファイルを作ります。このデータはアプリ終了時に自動削除されません。デモ管理画面で削除できます。
-
-## ネットワーク公開
-
-GameServerManagerは特定のVPN製品へ依存しないWebアプリとして実装します。LAN、Tailscale、その他のVPNからのアクセスは、Spring Bootにとってすべて通常のHTTP通信として扱います。
-
-既定では安全のため`127.0.0.1:8080`だけで待ち受けます。単一管理者認証、Cookieセッション、CSRF対策は実装済みです。LANやVPNから接続する場合だけ、次の環境変数を明示的に設定します。
+### 初回セットアップ
 
 ```powershell
-$env:GAME_SERVER_MANAGER_ADDRESS = "0.0.0.0"
-$env:GAME_SERVER_MANAGER_PORT = "8080"
+cd frontend
+npm.cmd install
 ```
 
-想定するアクセス例です。
+バックエンドの依存関係は、初回のGradle実行時に自動取得されます。
 
-```text
-自宅LAN:   http://192.168.x.x:8080
-Tailscale: http://100.x.x.x:8080
-```
-
-Tailscaleは任意の利用例であり、GameServerManagerの必須依存ではありません。Tailscaleのインストール、Tailnetへの端末追加、アクセス制御は利用者が行います。管理ポート`8080`をルーターのポート転送などで一般インターネットへ直接公開しないでください。
-
-## 開発時の起動
+### 開発サーバーの起動
 
 ターミナル1でバックエンドを起動します。
 
 ```powershell
-$env:GAME_SERVER_MANAGER_ROOT = "$env:LOCALAPPDATA\GameServerManagerDev"
 cd backend
+$env:GAME_SERVER_MANAGER_ROOT = "$env:LOCALAPPDATA\GameServerManagerDev"
 .\gradlew.bat bootRun
 ```
-
-初回起動時はサーバーPC自身から管理者パスワードを設定します。認証情報は`$env:GAME_SERVER_MANAGER_ROOT\config\authentication.json`へ保存され、パスワード本体ではなくbcryptハッシュだけが残ります。パスワードを忘れた場合はバックエンドを停止し、このファイルを削除または退避してからlocalhostで再設定します。PalworldやSteamCMDのデータには影響しません。
 
 ターミナル2でフロントエンドを起動します。
 
@@ -129,128 +89,100 @@ cd frontend
 npm.cmd run dev
 ```
 
-起動後、`http://localhost:5173`を開きます。
-
-管理APIはSpring SecurityのCookieセッションで保護され、状態を変更する通信にはCSRFトークンが必要です。認証完成後も、`GAME_SERVER_MANAGER_ADDRESS=0.0.0.0`への変更は利用者が明示的に行います。
+ブラウザで `http://localhost:5173` を開き、初回管理者を設定します。Viteは `/api` を `http://localhost:8080` へ転送します。
 
 ## テスト
 
 ```powershell
+# バックエンド
 cd backend
 .\gradlew.bat test
-```
 
-Valve公式SteamCMDを一時フォルダーへ実際にダウンロードして検証する場合は、明示的に外部テストを有効化します。
-
-```powershell
-cd backend
-.\gradlew.bat test --tests "gameservermanager.infrastructure.steamcmd.OfficialSteamCmdDownloadExternalTests" -PsteamcmdExternalTest=true
-```
-
-通常のバックエンドテストではネットワークへ接続しません。
-
-Palworld Dedicated Serverを一時フォルダーへ実際にインストールする外部テストは以下です。数GB規模の通信が発生し、Steamネットワークへ直接接続できる環境が必要です。
-
-```powershell
-cd backend
-.\gradlew.bat test --tests "gameservermanager.infrastructure.steamcmd.PalworldInstallationExternalTests" -PpalworldExternalTest=true
-```
-
-```powershell
-cd frontend
+# フロントエンド
+cd ..\frontend
 npm.cmd test
+npm.cmd run lint
 ```
+
+通常の自動テストは、外部ネットワークや実ゲームサーバーへ接続しません。
 
 ## ビルド
 
+React画面を含む実行可能JARを生成します。
+
 ```powershell
 cd backend
-.\gradlew.bat build
+.\gradlew.bat bootJar
 ```
 
-```powershell
-cd frontend
-npm.cmd run build
-```
+JARは `backend/build/libs` に生成されます。
 
-## 現在の実装状況
+## Windows配布物
 
-- 構築フォーム、構築計画、Windows環境の事前検証
-- 初回管理者設定、ログイン・ログアウト、CSRF保護
-- 一時領域を使ったPalworldデモ作成とデモ管理
-- 1タイトルにつき1サーバーのJSON登録
-- SteamCMD準備、Palworld導入・設定・起動・停止・更新・バックアップのバックエンド処理
-- 毎日の指定時刻停止・起動
-- Windows Firewallと自動起動タスクを設定する配布用PowerShell
-
-実Palworldを画面から一括作成するフローを実装済みです。事前検証成功後に、SteamCMD準備、Palworld導入、設定保存、自動運転保存、ゲーム用Firewall規則の登録、起動確認、管理登録を順番に実行します。起動または登録に失敗した場合は追加したFirewall規則を解除します。SteamCMD以降とFirewall補助タスクの実機確認は、ゲームサーバー予定マシンで行います。ARK、Minecraft、既存サーバー取り込みも今後の対応です。
-
-初期版ではDBを使用せず、認証、サーバー登録、自動運転、実行状態、操作履歴を管理ルート内のJSONまたはJSON Linesへ保存します。
-
-## Palworldサーバーの自動運転
-
-Palworldサーバーの新規作成画面で、毎日の停止時刻と起動時刻をまとめて設定できます。既定値は停止 `04:00`、起動 `09:00` です。構築計画では自動運転の有効状態、停止・起動時刻、バックアップ設定、保持数を確認できます。
-
-構築計画の「デモサーバーを作成」では、本物のSteamCMDを使用せず、一時領域へPalworldのフォルダー構成、パスワードを伏せたデモ設定、自動運転設定を保存します。本番用の自動運転は有効化しません。
-
-初期版は1タイトルにつき1サーバーだけ管理します。Palworldを作成すると`config/servers.json`へ登録され、ゲーム選択画面は新規作成ではなく管理画面へのリンクを表示します。ARKとMinecraftはそれぞれ未作成であれば、対応実装後に1サーバーずつ作成できます。
-
-デモ管理画面では、実プロセスを起動せずに起動・停止・再起動の状態遷移を確認できます。`PALWORLD`と入力して削除すると、`GameServerManagerDemo`一時領域とPalworldの登録だけを削除し、再びPalworldを作成できる状態へ戻します。
-
-自動運転を有効にすると、停止時刻にワールドを保存してサーバーを停止します。指定した停止時間帯だけ停止を維持し、起動時刻になるとサーバーを起動します。
-
-Palworld本体の自動バックアップは常に有効化し、頻度と世代管理はPalworldに任せます。Game Server Manager独自のZIPバックアップは作成しません。
-
-自動運転設定は `config/palworld-main-automation.json`、実行状態は `config/palworld-main-automation-runtime.json` に保存します。管理者パスワードは自動運転設定へ保存せず、停止処理の直前にPalworld本体の `PalWorldSettings.ini` から読み取ります。
-
-## ゲームポートの接続範囲
-
-Palworld作成時に、プレイヤー接続用UDPポートの接続元を選択できます。既定では同一LANとTailscaleを許可します。
-
-- 同一LAN: `LocalSubnet`
-- Tailscale: `100.64.0.0/10`
-- 手動指定: IPv4アドレスまたはCIDRを複数指定可能
-- すべての接続元: `Any`。選択時はほかの範囲を無効化
-
-選択内容は構築計画、デモ設定、`config/servers.json`のサーバー登録へ保存します。実構築では管理者権限のFirewall補助タスクがゲーム用UDP受信規則へ反映し、デモ作成ではWindows Firewallを変更しません。管理画面、RCON、Palworld REST APIの公開範囲とは分離して扱います。
-
-## Windows Firewallと自動起動
-
-React画面を含む実行可能JARと、管理者権限が必要な限定操作だけを行うセットアップスクリプトを生成できます。
+Java 21ランタイム、実行可能JAR、Windows連携スクリプトを含む配布物を生成します。
 
 ```powershell
 cd backend
 .\gradlew.bat windowsDistribution
-cd ..\windows\publish\GameServerManager
 ```
 
-`windows\publish\GameServerManager`へ`GameServerManager.exe`、Java 21ランタイム、React画面を内包したJAR、セットアップスクリプトをまとめて生成します。Javaを別途インストールせず、`GameServerManager.exe`から起動できます。
+出力先は `windows/publish/GameServerManager` です。
 
-変更内容だけを確認する場合は`Plan`を使用します。この操作はFirewallやタスクスケジューラを変更しません。
+セットアップ内容だけを確認する場合は、生成先で次を実行します。この操作はWindows設定を変更しません。
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\GameServerManager.WindowsSetup.ps1 `
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\GameServerManager.WindowsSetup.ps1 `
   -Action Plan `
   -StorageRoot C:\GameServerManager `
   -ManagementPort 8080
 ```
 
-登録は管理者として開いたPowerShellで実行します。
+インストールは管理者として開いたPowerShellで実行します。
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\GameServerManager.WindowsSetup.ps1 `
+powershell.exe -NoProfile -ExecutionPolicy Bypass `
+  -File .\GameServerManager.WindowsSetup.ps1 `
   -Action Install `
   -StorageRoot C:\GameServerManager `
   -ManagementPort 8080
 ```
 
-`Install`は次の限定操作だけを行います。
+セットアップでは、管理画面用Firewall規則、ゲーム用Firewall補助タスク、Windows起動時の自動起動タスクを登録します。状態確認は `-Action Status`、解除は `-Action Uninstall` を使用します。
 
-- 管理画面用TCPポートをLANとTailscaleアドレス範囲から許可する
-- ゲーム構築時のUDP規則だけを操作するFirewall補助タスクを登録する
-- 実行可能JARを`C:\GameServerManager\app`へ配置する
-- 制限付きユーザーでWindows起動時に実行する固定名タスクを登録する
+## 実行設定
 
-RCONポートとPalworld REST APIポートは外部へ公開しません。状態確認は`-Action Status`、解除は管理者PowerShellで`-Action Uninstall`を使用します。解除してもSteamCMD、ゲーム本体、ワールド、バックアップ、認証・自動運転設定は削除しません。
+| 環境変数 | 既定値 | 用途 |
+|---|---|---|
+| `GAME_SERVER_MANAGER_ROOT` | `C:\GameServerManager` | 管理データの保存先 |
+| `GAME_SERVER_MANAGER_ADDRESS` | `127.0.0.1` | 管理画面の待受アドレス |
+| `GAME_SERVER_MANAGER_PORT` | `8080` | 管理画面のポート |
+| `GAME_SERVER_MANAGER_SECURE_COOKIE` | `false` | CookieのSecure属性 |
 
-実Palworldの構築時には、選択したゲームポートと接続元でUDP受信規則を追加します。起動または管理登録に失敗した場合は追加した規則を解除します。デモ操作ではFirewallとタスクスケジューラを変更しません。
+管理データは管理ルート配下の `config`、`logs`、`backups`、`tools`、`servers` に保存します。
+
+## ネットワークとセキュリティ
+
+- 既定では `127.0.0.1:8080` だけで待ち受けます。
+- LANやVPNから利用する場合のみ、`GAME_SERVER_MANAGER_ADDRESS=0.0.0.0` を明示的に設定します。
+- 管理ポートを一般インターネットへ直接公開しないでください。
+- ゲームポートは、構築時に選択したLAN、Tailscale、カスタムアドレスなどの接続元だけに許可します。
+- RCONとゲーム管理APIは外部公開せず、localhostから使用します。
+- パスワードはログ、操作履歴、通常のAPIレスポンスへ出力しません。
+- デモモードではSteamCMD、実サーバー、Firewall、タスクスケジューラを変更しません。
+
+## ディレクトリ構成
+
+```text
+GameServerManager/
+├─ backend/      Kotlin・Spring Bootバックエンド
+├─ frontend/     Reactフロントエンド
+├─ windows/      配布・Firewall連携用PowerShell
+└─ _Document/    共通仕様・ゲーム別設計仕様
+```
+
+## ドキュメント
+
+- [共通部分の仕様書](_Document/共通部分の仕様書.md)
+- [ARK用設計仕様書](_Document/ARK用設計仕様書.md)
+- [パルワールド用設計仕様書](_Document/パルワールド用設計仕様書.md)
