@@ -62,6 +62,12 @@ class ConstructPalworldServer(
                 maxPlayers = command.maxPlayers,
                 serverPassword = command.serverPassword,
                 adminPassword = command.adminPassword,
+                serverDescription = command.serverDescription,
+                expRate = command.expRate, palCaptureRate = command.palCaptureRate,
+                palSpawnRate = command.palSpawnRate, enemyDropRate = command.enemyDropRate,
+                eggHatchingTime = command.eggHatchingTime, deathPenalty = command.deathPenalty,
+                pvpEnabled = command.pvpEnabled, friendlyFireEnabled = command.friendlyFireEnabled,
+                baseCampMaxNum = command.baseCampMaxNum, baseCampWorkerMaxNum = command.baseCampWorkerMaxNum,
             ),
         )
         steps += completed("configuration", "Palworld設定の保存", "サーバー設定を保存しました")
@@ -150,6 +156,17 @@ class ConstructPalworldServer(
         val shutdownTime: String,
         val startupTime: String,
         val gamePortAccess: CreateGamePortAccess.Command,
+        val serverDescription: String = "",
+        val expRate: Double = 1.0,
+        val palCaptureRate: Double = 1.0,
+        val palSpawnRate: Double = 1.0,
+        val enemyDropRate: Double = 1.0,
+        val eggHatchingTime: Double = 2.0,
+        val deathPenalty: String = "All",
+        val pvpEnabled: Boolean = false,
+        val friendlyFireEnabled: Boolean = false,
+        val baseCampMaxNum: Int = 128,
+        val baseCampWorkerMaxNum: Int = 15,
     )
 
     companion object {

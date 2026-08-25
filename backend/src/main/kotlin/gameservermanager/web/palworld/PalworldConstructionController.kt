@@ -36,6 +36,12 @@ class PalworldConstructionController(
                     customRemoteAddresses = request.customRemoteAddresses,
                     allowAny = request.allowAnyRemoteAddress,
                 ),
+                serverDescription = request.serverDescription,
+                expRate = request.expRate, palCaptureRate = request.palCaptureRate,
+                palSpawnRate = request.palSpawnRate, enemyDropRate = request.enemyDropRate,
+                eggHatchingTime = request.eggHatchingTime, deathPenalty = request.deathPenalty,
+                pvpEnabled = request.pvpEnabled, friendlyFireEnabled = request.friendlyFireEnabled,
+                baseCampMaxNum = request.baseCampMaxNum, baseCampWorkerMaxNum = request.baseCampWorkerMaxNum,
             ),
         )
     }

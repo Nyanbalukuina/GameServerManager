@@ -42,6 +42,17 @@ class ConfigurePalworldServer(
             "RESTAPIEnabled" to "True",
             "RESTAPIPort" to REST_API_PORT.toString(),
             "bIsUseBackupSaveData" to "True",
+            "ServerDescription" to quoted(command.serverDescription),
+            "ExpRate" to command.expRate.toString(),
+            "PalCaptureRate" to command.palCaptureRate.toString(),
+            "PalSpawnNumRate" to command.palSpawnRate.toString(),
+            "EnemyDropItemRate" to command.enemyDropRate.toString(),
+            "PalEggDefaultHatchingTime" to command.eggHatchingTime.toString(),
+            "DeathPenalty" to command.deathPenalty,
+            "bIsPvP" to command.pvpEnabled.toString().replaceFirstChar(Char::uppercase),
+            "bEnableFriendlyFire" to command.friendlyFireEnabled.toString().replaceFirstChar(Char::uppercase),
+            "BaseCampMaxNum" to command.baseCampMaxNum.toString(),
+            "BaseCampWorkerMaxNum" to command.baseCampWorkerMaxNum.toString(),
         )
         val result = configurationWriter.write(
             PalworldConfigurationWriteCommand(
@@ -81,6 +92,17 @@ class ConfigurePalworldServer(
         val maxPlayers: Int,
         val serverPassword: String,
         val adminPassword: String,
+        val serverDescription: String = "",
+        val expRate: Double = 1.0,
+        val palCaptureRate: Double = 1.0,
+        val palSpawnRate: Double = 1.0,
+        val enemyDropRate: Double = 1.0,
+        val eggHatchingTime: Double = 2.0,
+        val deathPenalty: String = "All",
+        val pvpEnabled: Boolean = false,
+        val friendlyFireEnabled: Boolean = false,
+        val baseCampMaxNum: Int = 128,
+        val baseCampWorkerMaxNum: Int = 15,
     )
 
     companion object {

@@ -25,12 +25,14 @@ class RunDemoAsaServerConstruction(
         val workspace = Path.of(System.getProperty("java.io.tmpdir")).resolve("GameServerManagerDemo")
         val runtime = workspace.resolve("servers/asa/main/runtime")
         val settingsPath = runtime.resolve("ShooterGame/Saved/Config/WindowsServer/GameUserSettings.ini")
+        val gameIniPath = runtime.resolve("ShooterGame/Saved/Config/WindowsServer/Game.ini")
         val executable = runtime.resolve("ShooterGame/Binaries/Win64/ArkAscendedServer.exe")
         Files.createDirectories(requireNotNull(settingsPath.parent))
         Files.createDirectories(requireNotNull(executable.parent))
         Files.createDirectories(workspace.resolve("logs"))
         Files.writeString(executable, "demo asa server", StandardCharsets.UTF_8)
         Files.writeString(settingsPath, settings(command), StandardCharsets.UTF_8)
+        Files.writeString(gameIniPath, gameSettings(command), StandardCharsets.UTF_8)
 
         registrationStore.create(
             GameServerRegistration(
@@ -44,7 +46,7 @@ class RunDemoAsaServerConstruction(
             listOf(
                 completed("validate", "構築内容の検証", "ASAの入力内容を確認しました"),
                 completed("install", "ASAデモ構成の配置", "一時領域へASA相当のフォルダーを作成しました"),
-                completed("configuration", "ASA設定の保存", "GameUserSettings.iniを作成しました"),
+                completed("configuration", "ASA設定の保存", "GameUserSettings.iniとGame.iniを作成しました"),
                 completed("registration", "管理対象への登録", "デモASAサーバーを登録しました"),
             ),
         )
@@ -59,6 +61,20 @@ class RunDemoAsaServerConstruction(
                 "ServerAdminPassword" to command.adminPassword,
                 "RCONEnabled" to "True",
                 "RCONPort" to command.rconPort.toString(),
+                "ServerPVE" to command.pveEnabled.toString().replaceFirstChar(Char::uppercase),
+                "XPMultiplier" to command.xpMultiplier.toString(),
+                "TamingSpeedMultiplier" to command.tamingSpeedMultiplier.toString(),
+                "HarvestAmountMultiplier" to command.harvestAmountMultiplier.toString(),
+            ),
+        ),
+    )
+
+    private fun gameSettings(command: Command) = AsaGameUserSettingsIni.update(
+        "",
+        linkedMapOf(
+            "/Script/ShooterGame.ShooterGameMode" to linkedMapOf(
+                "EggHatchSpeedMultiplier" to command.eggHatchSpeedMultiplier.toString(),
+                "BabyMatureSpeedMultiplier" to command.babyMatureSpeedMultiplier.toString(),
             ),
         ),
     )
@@ -77,5 +93,11 @@ class RunDemoAsaServerConstruction(
         val serverPassword: String,
         val adminPassword: String,
         val gamePortAccess: CreateGamePortAccess.Command,
+        val pveEnabled: Boolean = true,
+        val xpMultiplier: Double = 1.0,
+        val tamingSpeedMultiplier: Double = 1.0,
+        val harvestAmountMultiplier: Double = 1.0,
+        val eggHatchSpeedMultiplier: Double = 1.0,
+        val babyMatureSpeedMultiplier: Double = 1.0,
     )
 }

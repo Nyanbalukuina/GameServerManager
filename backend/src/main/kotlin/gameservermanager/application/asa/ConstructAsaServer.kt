@@ -50,6 +50,9 @@ class ConstructAsaServer(
             ConfigureAsaServer.Command(
                 command.serverName, command.installPath, command.rconPort,
                 command.serverPassword, command.adminPassword,
+                command.pveEnabled, command.xpMultiplier,
+                command.tamingSpeedMultiplier, command.harvestAmountMultiplier,
+                command.eggHatchSpeedMultiplier, command.babyMatureSpeedMultiplier,
             ),
         )
         steps += completed("configuration", "ASA設定の保存", "GameUserSettings.iniを保存しました")
@@ -105,6 +108,12 @@ class ConstructAsaServer(
         val serverPassword: String,
         val adminPassword: String,
         val gamePortAccess: CreateGamePortAccess.Command,
+        val pveEnabled: Boolean = true,
+        val xpMultiplier: Double = 1.0,
+        val tamingSpeedMultiplier: Double = 1.0,
+        val harvestAmountMultiplier: Double = 1.0,
+        val eggHatchSpeedMultiplier: Double = 1.0,
+        val babyMatureSpeedMultiplier: Double = 1.0,
     )
 
     companion object {

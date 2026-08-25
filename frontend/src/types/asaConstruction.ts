@@ -15,6 +15,12 @@ export type AsaConstructionRequest = {
   allowTailscale: boolean
   customRemoteAddresses: string
   allowAnyRemoteAddress: boolean
+  pveEnabled: boolean
+  xpMultiplier: string
+  tamingSpeedMultiplier: string
+  harvestAmountMultiplier: string
+  eggHatchSpeedMultiplier: string
+  babyMatureSpeedMultiplier: string
 }
 
 export type AsaConstructionErrors = Partial<Record<keyof AsaConstructionRequest | 'request', string>>

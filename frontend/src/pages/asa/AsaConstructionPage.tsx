@@ -4,33 +4,56 @@ import { getStorageConfiguration } from '../../api/storageConfiguration'
 import { AppLink } from '../../components/common/AppLink'
 import { ConstructionInProgress } from '../../components/common/ConstructionInProgress'
 import { ConstructionProgress } from '../../components/common/ConstructionProgress'
+import { FormField } from '../../components/common/FormField'
+import { GamePortAccessFields } from '../../components/common/GamePortAccessFields'
 import { PreflightResults } from '../../components/common/PreflightResults'
 import type { AsaConstructionErrors, AsaConstructionRequest } from '../../types/asaConstruction'
 import type { DemoConstructionReport, ServerConstructionReport, ServerPreflightReport } from '../../types/serverOperations'
 import '../../styles/serverConstruction.css'
 
 const initialRequest: AsaConstructionRequest = {
-  serverName: 'GSM ASA Server', installPath: '', steamCmdPath: '', map: 'TheIsland_WP',
-  gamePort: '7777', queryPort: '27015', rconPort: '27020', maxPlayers: '20',
-  serverPassword: '', adminPassword: '', allowLocalSubnet: true, allowTailscale: true,
-  customRemoteAddresses: '', allowAnyRemoteAddress: false,
+  serverName: 'GSM ASA Server',
+  installPath: '',
+  steamCmdPath: '',
+  map: 'TheIsland_WP',
+  gamePort: '7777',
+  queryPort: '27015',
+  rconPort: '27020',
+  maxPlayers: '20',
+  serverPassword: '',
+  adminPassword: '',
+  allowLocalSubnet: true,
+  allowTailscale: true,
+  customRemoteAddresses: '',
+  allowAnyRemoteAddress: false,
+  pveEnabled: true,
+  xpMultiplier: '1',
+  tamingSpeedMultiplier: '1',
+  harvestAmountMultiplier: '1',
+  eggHatchSpeedMultiplier: '1',
+  babyMatureSpeedMultiplier: '1',
 }
 
-export function AsaConstructionPage() {
+export function AsaConstructionPage({ demoEnabled }: { demoEnabled: boolean }) {
   const [request, setRequest] = useState(initialRequest)
-  const [kind, setKind] = useState<'DEMO' | 'REAL'>('DEMO')
+  const [kind, setKind] = useState<'DEMO' | 'REAL'>(demoEnabled ? 'DEMO' : 'REAL')
   const [errors, setErrors] = useState<AsaConstructionErrors>({})
   const [preflight, setPreflight] = useState<ServerPreflightReport | null>(null)
   const [report, setReport] = useState<DemoConstructionReport | ServerConstructionReport | null>(null)
   const [checking, setChecking] = useState(false)
   const [constructing, setConstructing] = useState(false)
+  const [reviewing, setReviewing] = useState(false)
 
   useEffect(() => {
     getStorageConfiguration()
       .then((configuration) => setRequest((current) => ({
-        ...current, installPath: configuration.asaInstallPath, steamCmdPath: configuration.steamCmdPath,
+        ...current,
+        installPath: configuration.asaInstallPath,
+        steamCmdPath: configuration.steamCmdPath,
       })))
-      .catch((error: unknown) => setErrors({ request: error instanceof Error ? error.message : '保存先を取得できませんでした' }))
+      .catch((error: unknown) => setErrors({
+        request: error instanceof Error ? error.message : '保存先を取得できませんでした',
+      }))
   }, [])
 
   useEffect(() => {
@@ -41,56 +64,137 @@ export function AsaConstructionPage() {
   }, [constructing])
 
   const set = <K extends keyof AsaConstructionRequest>(key: K, value: AsaConstructionRequest[K]) => {
-    setRequest((current) => ({ ...current, [key]: value })); setPreflight(null); setReport(null)
+    setRequest((current) => ({ ...current, [key]: value }))
+    setErrors((current) => ({ ...current, [key]: undefined }))
+    setPreflight(null)
+    setReport(null)
   }
 
   const check = async () => {
-    setChecking(true); setErrors({}); setReport(null)
-    try { setPreflight(await runAsaPreflight(request)) }
-    catch (error) { setErrors({ request: error instanceof Error ? error.message : '事前検証に失敗しました' }) }
-    finally { setChecking(false) }
+    setChecking(true)
+    setErrors({})
+    setReport(null)
+    try {
+      setPreflight(await runAsaPreflight(request))
+      setReviewing(true)
+    } catch (error) {
+      setErrors({ request: error instanceof Error ? error.message : '事前検証に失敗しました' })
+    } finally {
+      setChecking(false)
+    }
   }
 
   const construct = async () => {
-    setConstructing(true); setErrors({})
+    setConstructing(true)
+    setErrors({})
     try {
-      if (kind === 'DEMO') setReport(await constructDemoAsaServer(request))
-      else {
+      if (kind === 'DEMO') {
+        setReport(await constructDemoAsaServer(request))
+      } else {
         const result = await constructAsaServer(request)
         if (result.ok) setReport(result.report)
         else setErrors(result.errors)
       }
-    } catch (error) { setErrors({ request: error instanceof Error ? error.message : 'ARK: Survival Ascendedサーバーを構築できませんでした' }) }
-    finally { setConstructing(false) }
+    } catch (error) {
+      setErrors({
+        request: error instanceof Error
+          ? error.message
+          : 'ARK: Survival Ascendedサーバーを構築できませんでした',
+      })
+    } finally {
+      setConstructing(false)
+    }
   }
 
-  return <main>
-    <AppLink className="back-link" href="/servers/new">ゲーム選択へ戻る</AppLink>
-    <header><p className="eyebrow">ARK: Survival Ascended</p><h1>ARK: Survival Ascended専用サーバー構築</h1><p>入力後に構築可能か検証し、デモまたは実サーバーを構築します。</p></header>
-    {constructing && <ConstructionInProgress demo={kind === 'DEMO'} game="ASA" />}
-    <section className="card"><h2>構築方法</h2>
-      <label className="field">構築の種類<select value={kind} onChange={(event) => { setKind(event.target.value as 'DEMO' | 'REAL'); setReport(null) }}><option value="DEMO">デモ構築（画面と設定を確認）</option><option value="REAL">実構築（SteamCMD・Firewall・ARK: Survival Ascendedを実行）</option></select></label>
-      <p className="notice">デモ構築は一時領域だけを使用し、ダウンロード・Firewall変更・ゲーム起動を行いません。</p>
-    </section>
-    <section className="card"><h2>サーバー設定</h2>
-      <label className="field">サーバー名<input value={request.serverName} onChange={(e) => set('serverName', e.target.value)} /></label>
-      <label className="field">ARK: Survival Ascendedインストール先<input value={request.installPath} onChange={(e) => set('installPath', e.target.value)} /></label>
-      <label className="field">SteamCMD保存先<input value={request.steamCmdPath} onChange={(e) => set('steamCmdPath', e.target.value)} /></label>
-      <label className="field">マップ<select value={request.map} onChange={(e) => set('map', e.target.value as 'TheIsland_WP')}><option value="TheIsland_WP">The Island</option></select></label>
-      <label className="field">ゲームポート<input type="number" min="1" max="65534" value={request.gamePort} onChange={(e) => set('gamePort', e.target.value)} /></label>
-      <label className="field">Peerポート<input value={Number(request.gamePort) + 1 || ''} disabled /></label>
-      <label className="field">Queryポート<input type="number" min="1" max="65535" value={request.queryPort} onChange={(e) => set('queryPort', e.target.value)} /></label>
-      <label className="field">RCONポート<input type="number" min="1" max="65535" value={request.rconPort} onChange={(e) => set('rconPort', e.target.value)} /></label>
-      <label className="field">最大プレイヤー数<input type="number" min="1" max="70" value={request.maxPlayers} onChange={(e) => set('maxPlayers', e.target.value)} /></label>
-      <label className="field">サーバーパスワード<input value={request.serverPassword} onChange={(e) => set('serverPassword', e.target.value)} /></label>
-      <label className="field">管理者パスワード<input value={request.adminPassword} onChange={(e) => set('adminPassword', e.target.value)} minLength={8} /></label>
-      <label className="check-field"><input type="checkbox" checked={request.allowLocalSubnet} onChange={(e) => set('allowLocalSubnet', e.target.checked)} />同一LANからの接続を許可</label>
-      <label className="check-field"><input type="checkbox" checked={request.allowTailscale} onChange={(e) => set('allowTailscale', e.target.checked)} />Tailscaleからの接続を許可</label>
-      <label className="check-field"><input type="checkbox" checked={request.allowAnyRemoteAddress} onChange={(e) => set('allowAnyRemoteAddress', e.target.checked)} />すべての接続元を許可</label>
-      <label className="field">追加の接続元アドレス<input value={request.customRemoteAddresses} onChange={(e) => set('customRemoteAddresses', e.target.value)} placeholder="例: 192.168.1.0/24" /></label>
-    </section>
-    <section className="card"><h2>構築前の事前検証</h2><p>保存先、書き込み権限、空き容量、SteamCMD、ARK: Survival Ascendedが使用する全ポートを確認します。</p><button type="button" disabled={checking || constructing} aria-busy={checking} onClick={() => void check()}>{checking ? '検証中...' : '事前検証を実行'}</button>{preflight && <PreflightResults report={preflight} />}</section>
-    <section className="card"><h2>{kind === 'DEMO' ? 'ARK: Survival Ascendedデモサーバー構築' : 'ARK: Survival Ascended実サーバー構築'}</h2><button type="button" disabled={!preflight || (kind === 'REAL' && !preflight.canProceed) || constructing || report !== null} onClick={() => void construct()}>{constructing ? '構築中...' : kind === 'DEMO' ? 'デモサーバーを構築' : '実サーバーを構築して起動'}</button>{!preflight && <p className="notice">先に事前検証を実行してください。</p>}{kind === 'DEMO' && preflight && !preflight.canProceed && <p className="notice">実構築には修正が必要ですが、デモ構築は一時領域で実行できます。</p>}{errors.request && <p className="error request-error" role="alert">{errors.request}</p>}</section>
-    {report && <><ConstructionProgress report={report} /><AppLink className="management-link" href="/servers/asa">ARK: Survival Ascended管理画面を開く</AppLink></>}
-  </main>
+  if (reviewing && preflight) {
+    return (
+      <main className="asa-construction-page compact-page">
+        <button className="back-link link-button" type="button" disabled={constructing} onClick={() => { setReviewing(false); setReport(null) }}>入力画面へ戻る</button>
+        <header className="page-header"><p className="eyebrow">ARK: Survival Ascended</p><h1>構築内容の確認</h1><p>入力内容と事前検証結果を確認してからサーバー構築を開始します。</p></header>
+        {constructing && <ConstructionInProgress demo={kind === 'DEMO'} game="ASA" />}
+
+        <section className="card">
+          <div className="section-heading"><div><p className="section-number">01</p><h2>基本設定</h2></div><p>ARK本体とSteamCMDの保存先です。</p></div>
+          <dl><dt>インストール先</dt><dd>{request.installPath}</dd><dt>SteamCMDの保存先</dt><dd>{request.steamCmdPath}</dd></dl>
+        </section>
+
+        <section className="card">
+          <div className="section-heading"><div><p className="section-number">02</p><h2>ゲーム設定</h2></div><p>ファイルごとに保存される設定を確認できます。</p></div>
+          <div className="settings-preview-grid three-column">
+            <section><h3>起動設定</h3><p className="setting-source">INIファイルではなく起動時に指定</p><dl><dt>マップ</dt><dd>{mapLabel(request.map)}</dd><dt>最大プレイヤー数</dt><dd>{request.maxPlayers}</dd></dl></section>
+            <section><h3>GameUserSettings.ini</h3><dl><dt>サーバー名</dt><dd>{request.serverName}</dd><dt>ゲームモード</dt><dd>{request.pveEnabled ? 'PvE' : 'PvP'}</dd><dt>経験値倍率</dt><dd>{request.xpMultiplier}</dd><dt>テイム速度</dt><dd>{request.tamingSpeedMultiplier}</dd><dt>採取量倍率</dt><dd>{request.harvestAmountMultiplier}</dd></dl></section>
+            <section><h3>Game.ini</h3><dl><dt>孵化速度</dt><dd>{request.eggHatchSpeedMultiplier}</dd><dt>赤ちゃんの成熟速度</dt><dd>{request.babyMatureSpeedMultiplier}</dd></dl></section>
+          </div>
+        </section>
+
+        <section className="card"><div className="section-heading"><div><p className="section-number">03</p><h2>接続設定</h2></div></div><dl><dt>ゲームポート</dt><dd>{request.gamePort} / Peer {Number(request.gamePort) + 1}</dd><dt>Queryポート</dt><dd>{request.queryPort}</dd><dt>RCONポート</dt><dd>{request.rconPort}</dd><dt>接続元</dt><dd>{accessLabel(request)}</dd></dl></section>
+        <section className="card"><div className="section-heading"><div><p className="section-number">04</p><h2>パスワード</h2></div><p>GameUserSettings.iniへ保存する内容です。</p></div><dl><dt>サーバーパスワード</dt><dd>{request.serverPassword || '未設定'}</dd><dt>管理者パスワード</dt><dd>{request.adminPassword || '未設定'}</dd></dl></section>
+
+        <section className="card action-card">
+          <div className="section-heading"><div><p className="section-number">05</p><h2>事前検証結果</h2></div><p>保存先、空き容量、SteamCMD、使用ポートの確認結果です。</p></div>
+          <PreflightResults report={preflight} />
+        </section>
+
+        <section className="card action-card">
+          <div className="section-heading"><div><p className="section-number">06</p><h2>サーバー構築</h2></div><p>{kind === 'DEMO' ? '実環境を変更せず、設定と操作の流れを確認します。' : 'ARKサーバーをインストールし、設定・Firewall・起動まで実行します。'}</p></div>
+          {demoEnabled && <label className="field" htmlFor="asaConstructionKind">構築の種類<select id="asaConstructionKind" value={kind} onChange={(event) => { setKind(event.target.value as 'DEMO' | 'REAL'); setReport(null) }}><option value="DEMO">デモ構築</option><option value="REAL">実サーバー構築</option></select></label>}
+          <button type="button" disabled={(kind === 'REAL' && !preflight.canProceed) || constructing || report !== null} onClick={() => void construct()}>{constructing ? '構築中...' : kind === 'DEMO' ? 'デモサーバーを構築' : 'ARKサーバーを構築して起動'}</button>
+          {kind === 'REAL' && !preflight.canProceed && <p className="notice">事前検証のエラーを解消してから実構築を開始してください。</p>}
+          {kind === 'DEMO' && !preflight.canProceed && <p className="notice">実構築には修正が必要ですが、デモ構築は実行できます。</p>}
+          {errors.request && <p className="error request-error" role="alert">{errors.request}</p>}
+        </section>
+        {report && <><ConstructionProgress report={report} game="ARK: Survival Ascended" /><AppLink className="management-link" href="/servers/asa">ARK管理画面を開く</AppLink></>}
+      </main>
+    )
+  }
+
+  return (
+    <main className="asa-construction-page compact-page">
+      <AppLink className="back-link" href="/servers/new">ゲーム選択へ戻る</AppLink>
+      <header className="page-header"><p className="eyebrow">ARK: Survival Ascended</p><h1>新規ARKサーバー構築</h1><p>必要な設定を入力し、確認画面で事前検証結果を確認してから構築します。</p></header>
+
+      <section className="card form-section">
+        <div className="section-heading"><div><p className="section-number">01</p><h2>基本設定</h2></div><p>ARK本体とSteamCMDの保存先を指定します。</p></div>
+        <FormField id="asaInstallPath" label="ARKサーバーのインストール先" value={request.installPath} error={errors.installPath} onChange={(value) => set('installPath', value)} />
+        <FormField id="asaSteamCmdPath" label="SteamCMDの保存先" value={request.steamCmdPath} error={errors.steamCmdPath} onChange={(value) => set('steamCmdPath', value)} />
+      </section>
+
+      <section className="card form-section">
+        <div className="section-heading"><div><p className="section-number">02</p><h2>ゲーム設定</h2></div><p>起動引数とINIファイルの役割ごとに設定します。</p></div>
+        <div className="settings-editor-group startup-settings"><h3>起動設定</h3><p className="setting-source">マップと最大人数はINIではなく、ARKサーバーの起動時に指定されます。</p><div className="form-grid"><label className="field" htmlFor="asaMap">マップ<select id="asaMap" value={request.map} onChange={(event) => set('map', event.target.value as 'TheIsland_WP')}><option value="TheIsland_WP">The Island</option></select><span className="error" aria-hidden="true" /></label><FormField id="asaMaxPlayers" label="最大プレイヤー数" type="number" value={request.maxPlayers} error={errors.maxPlayers} onChange={(value) => set('maxPlayers', value)} /></div></div>
+        <div className="settings-editor-group"><h3><span>1</span>GameUserSettings.ini</h3><FormField id="asaServerName" label="サーバー名" value={request.serverName} error={errors.serverName} onChange={(value) => set('serverName', value)} /><label className="field" htmlFor="asaGameMode">ゲームモード<select id="asaGameMode" value={request.pveEnabled ? 'PVE' : 'PVP'} onChange={(event) => set('pveEnabled', event.target.value === 'PVE')}><option value="PVE">PvE</option><option value="PVP">PvP</option></select></label><div className="form-grid"><FormField id="asaXpMultiplier" label="経験値倍率" type="number" value={request.xpMultiplier} error={errors.xpMultiplier} onChange={(value) => set('xpMultiplier', value)} /><FormField id="asaTamingSpeedMultiplier" label="テイム速度" type="number" value={request.tamingSpeedMultiplier} error={errors.tamingSpeedMultiplier} onChange={(value) => set('tamingSpeedMultiplier', value)} /><FormField id="asaHarvestAmountMultiplier" label="採取量倍率" type="number" value={request.harvestAmountMultiplier} error={errors.harvestAmountMultiplier} onChange={(value) => set('harvestAmountMultiplier', value)} /></div></div>
+        <div className="settings-editor-group"><h3><span>2</span>Game.ini</h3><div className="form-grid"><FormField id="asaEggHatchSpeedMultiplier" label="孵化速度" type="number" value={request.eggHatchSpeedMultiplier} error={errors.eggHatchSpeedMultiplier} onChange={(value) => set('eggHatchSpeedMultiplier', value)} /><FormField id="asaBabyMatureSpeedMultiplier" label="赤ちゃんの成熟速度" type="number" value={request.babyMatureSpeedMultiplier} error={errors.babyMatureSpeedMultiplier} onChange={(value) => set('babyMatureSpeedMultiplier', value)} /></div></div>
+        <p className="notice">各倍率の標準値は1です。0.1から100の範囲で指定できます。</p>
+      </section>
+
+      <section className="card form-section">
+        <div className="section-heading"><div><p className="section-number">03</p><h2>接続設定</h2></div><p>使用するポートと接続を許可するネットワークを指定します。</p></div>
+        <div className="form-grid"><FormField id="asaGamePort" label="ゲームポート" type="number" value={request.gamePort} error={errors.gamePort} onChange={(value) => set('gamePort', value)} /><FormField id="asaPeerPort" label="Peerポート（自動）" type="number" value={request.gamePort.trim() === '' ? '' : String(Number(request.gamePort) + 1)} disabled onChange={() => undefined} /><FormField id="asaQueryPort" label="Queryポート" type="number" value={request.queryPort} error={errors.queryPort} onChange={(value) => set('queryPort', value)} /><FormField id="asaRconPort" label="RCONポート" type="number" value={request.rconPort} error={errors.rconPort} onChange={(value) => set('rconPort', value)} /></div>
+        <GamePortAccessFields allowLocalSubnet={request.allowLocalSubnet} allowTailscale={request.allowTailscale} allowAnyRemoteAddress={request.allowAnyRemoteAddress} customRemoteAddresses={request.customRemoteAddresses} error={errors.customRemoteAddresses} onChange={(field, value) => set(field, value as never)} />
+      </section>
+
+      <section className="card form-section">
+        <div className="section-heading"><div><p className="section-number">04</p><h2>パスワード</h2></div><p>GameUserSettings.iniへ保存される機密設定です。</p></div>
+        <div className="form-grid">
+          <FormField id="asaServerPassword" label="サーバーパスワード（任意）" value={request.serverPassword} error={errors.serverPassword} onChange={(value) => set('serverPassword', value)} />
+          <FormField id="asaAdminPassword" label="管理者パスワード" value={request.adminPassword} error={errors.adminPassword} onChange={(value) => set('adminPassword', value)} />
+        </div>
+      </section>
+
+      <div className="construction-review-action"><button type="button" disabled={checking} aria-busy={checking} onClick={() => void check()}>{checking ? '事前検証中...' : 'この設定でサーバー構築'}</button><p>クリックすると自動で事前検証を行い、確認画面へ進みます。</p>{errors.request && <p className="error request-error" role="alert">{errors.request}</p>}</div>
+    </main>
+  )
+}
+
+function mapLabel(map: AsaConstructionRequest['map']) {
+  return map === 'TheIsland_WP' ? 'The Island' : map
+}
+
+function accessLabel(request: AsaConstructionRequest) {
+  const labels = []
+  if (request.allowLocalSubnet) labels.push('同一LAN')
+  if (request.allowTailscale) labels.push('Tailscale')
+  if (request.customRemoteAddresses.trim()) labels.push('手動指定')
+  if (request.allowAnyRemoteAddress) labels.push('すべての接続元')
+  return labels.join('、') || 'なし'
 }

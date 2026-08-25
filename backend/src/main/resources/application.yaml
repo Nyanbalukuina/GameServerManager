@@ -14,5 +14,8 @@ server:
         secure: ${GAME_SERVER_MANAGER_SECURE_COOKIE:false}
 
 game-server-manager:
+  open-browser: ${GAME_SERVER_MANAGER_OPEN_BROWSER:false}
+  features:
+    demo-enabled: ${GAME_SERVER_MANAGER_DEMO_ENABLED:true}
   storage:
     root: "${GAME_SERVER_MANAGER_ROOT:C:\\GameServerManager}"

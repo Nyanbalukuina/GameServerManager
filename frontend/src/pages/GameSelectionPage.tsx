@@ -18,7 +18,7 @@ export function GameSelectionPage() {
   const asa = servers?.find((server) => server.game === 'ASA')
 
   return (
-    <main>
+    <main className="compact-page">
       <header>
         <p className="eyebrow">Game Server Manager</p>
         <h1>新規ゲームサーバー構築</h1>

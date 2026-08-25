@@ -57,17 +57,17 @@ export function PalworldManagementPage() {
     }
   }
 
-  return <main>
+  return <main className="compact-page">
     <AppLink className="back-link" href="/servers/new">ゲーム選択へ戻る</AppLink>
-    <header><p className="eyebrow">Game Server Manager</p><h1>Palworldサーバー管理</h1><p>サーバーの操作と現在のワールド設定を管理します。</p></header>
+    <header className="page-header"><p className="eyebrow">Palworld</p><h1>サーバー管理</h1><p>現在状態を確認し、サーバー操作とワールド設定を管理します。</p></header>
     {error && <p className="error request-error" role="alert">{error}</p>}
     {notice && <p className="success-notice" role="status">{notice}</p>}
     {!server && !error && <p>読み込み中...</p>}
     {server && <>
-      <section className="card">
-        <h2>{server.serverName}</h2>
+      <section className="card server-overview">
+        <div className="server-overview-heading"><div><p className="section-number">SERVER</p><h2>{server.serverName}</h2></div><span className={`status-badge ${server.state === 'RUNNING' ? 'running' : 'stopped'}`}>{server.state === 'RUNNING' ? '起動中' : '停止中'}</span></div>
         <dl><dt>種類</dt><dd>{server.mode === 'DEMO' ? 'デモ' : '実サーバー'}</dd><dt>状態</dt><dd>{server.state === 'RUNNING' ? '起動中' : '停止中'}</dd><dt>ゲームポート</dt><dd>{server.gamePort}</dd><dt>RCONポート</dt><dd>{server.rconPort}</dd><dt>ゲームポートの接続元</dt><dd>{formatGamePortAccess(server)}</dd><dt>デモデータ</dt><dd>{server.workspacePath}</dd></dl>
-        <div className="button-row"><button type="button" disabled={busy || server.state === 'RUNNING'} onClick={() => void operate('START')}>起動</button><button type="button" disabled={busy || server.state === 'STOPPED'} onClick={() => void operate('STOP')}>停止</button><button type="button" disabled={busy || server.state === 'STOPPED'} onClick={() => void operate('RESTART')}>再起動</button></div>
+        <div className="button-row management-actions"><button type="button" disabled={busy || server.state === 'RUNNING'} onClick={() => void operate('START')}>起動</button><button type="button" disabled={busy || server.state === 'STOPPED'} onClick={() => void operate('STOP')}>保存して停止</button><button type="button" disabled={busy || server.state === 'STOPPED'} onClick={() => void operate('RESTART')}>保存して再起動</button></div>
         <p className="notice">デモ操作のため、実際のゲームプロセスは操作しません。</p>
       </section>
       {settings && <section className="card"><h2>ワールド設定</h2>{editing && draft ? <SettingsForm draft={draft} busy={busy} onChange={setDraft} onSave={() => void save()} onCancel={() => setEditing(false)} /> : <><SettingsPreview settings={settings} /><button type="button" disabled={busy || server.state !== 'STOPPED'} onClick={beginEditing}>設定を編集</button>{server.state === 'RUNNING' && <p className="notice">設定を編集するにはサーバーを停止してください。</p>}</>}</section>}

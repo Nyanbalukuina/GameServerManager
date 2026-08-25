@@ -4,6 +4,7 @@ type FormFieldProps = {
   value: string
   error?: string
   type?: 'text' | 'number' | 'password'
+  disabled?: boolean
   onChange: (value: string) => void
 }
 
@@ -13,6 +14,7 @@ export function FormField({
   value,
   error,
   type = 'text',
+  disabled = false,
   onChange,
 }: FormFieldProps) {
   return (
@@ -22,6 +24,7 @@ export function FormField({
         id={id}
         type={type}
         value={value}
+        disabled={disabled}
         autoComplete={type === 'password' ? 'new-password' : undefined}
         aria-invalid={Boolean(error)}
         aria-describedby={error ? `${id}-error` : undefined}

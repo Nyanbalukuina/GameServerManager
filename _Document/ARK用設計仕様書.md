@@ -146,7 +146,7 @@ RCONPort=<RCONポート>
 | POST | `/api/asa/server/restart` | 再起動 |
 | DELETE | `/api/asa/server` | 削除 |
 
-APIは初回管理者設定後のCookieセッション認証とCSRF保護の対象とする。
+管理画面とAPIはlocalhostだけで公開し、更新系APIはCSRF保護の対象とする。ログイン認証は使用しない。
 
 ## 11. 完成条件
 

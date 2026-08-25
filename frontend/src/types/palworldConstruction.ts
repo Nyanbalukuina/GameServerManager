@@ -14,6 +14,17 @@ export type NewServerRequest = {
   allowTailscale: boolean
   customRemoteAddresses: string
   allowAnyRemoteAddress: boolean
+  serverDescription: string
+  expRate: number
+  palCaptureRate: number
+  palSpawnRate: number
+  enemyDropRate: number
+  eggHatchingTime: number
+  deathPenalty: 'None' | 'Item' | 'ItemAndEquipment' | 'All'
+  pvpEnabled: boolean
+  friendlyFireEnabled: boolean
+  baseCampMaxNum: number
+  baseCampWorkerMaxNum: number
 }
 
 export type ServerConstructionPlan = {

@@ -90,12 +90,13 @@ tasks.register<Exec>("windowsDistribution") {
             "--name", "GameServerManager",
             "--app-version", project.version.toString().removeSuffix("-SNAPSHOT"),
             "--vendor", "GameServerManager OSS",
-            "--description", "Palworld dedicated server manager",
+            "--description", "ARK and Palworld dedicated server manager",
             "--input", windowsPackageInputDirectory.get().asFile,
             "--main-jar", "game-server-manager.jar",
             "--dest", windowsPublishDirectory,
             "--java-options", "-Dfile.encoding=UTF-8",
-            "--win-console",
+            "--java-options", "-Dgame-server-manager.open-browser=true",
+            "--java-options", "-Dgame-server-manager.features.demo-enabled=false",
         )
     }
 
@@ -107,5 +108,44 @@ tasks.register<Exec>("windowsDistribution") {
             )
             into(windowsPublishDirectory.resolve("GameServerManager"))
         }
+    }
+}
+
+val windowsInstallerDirectory = rootProject.file("../windows/installer")
+
+val cleanWindowsInstaller by tasks.registering(Delete::class) {
+    delete(windowsInstallerDirectory)
+}
+
+tasks.register<Exec>("windowsInstaller") {
+    dependsOn(cleanWindowsInstaller, "windowsDistribution")
+    outputs.dir(windowsInstallerDirectory)
+
+    doFirst {
+        val javaHome = java21Launcher.get().metadata.installationPath.asFile
+        val jpackage = javaHome.resolve("bin/jpackage.exe")
+        val appImage = windowsPublishDirectory.resolve("GameServerManager")
+
+        require(jpackage.isFile) {
+            "JDK 21のjpackage.exeが見つかりません: $jpackage"
+        }
+        require(appImage.isDirectory) {
+            "Windowsアプリイメージが見つかりません: $appImage"
+        }
+
+        windowsInstallerDirectory.mkdirs()
+
+        commandLine(
+            jpackage,
+            "--type", "exe",
+            "--name", "GameServerManager",
+            "--app-version", project.version.toString().removeSuffix("-SNAPSHOT"),
+            "--app-image", appImage,
+            "--dest", windowsInstallerDirectory,
+            "--win-dir-chooser",
+            "--win-menu",
+            "--win-menu-group", "GameServerManager",
+            "--win-shortcut",
+        )
     }
 }

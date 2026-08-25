@@ -4,30 +4,20 @@ import { PalworldConstructionPage } from './pages/palworld/PalworldConstructionP
 import { PalworldManagementPage } from './pages/palworld/PalworldManagementPage'
 import { AsaConstructionPage } from './pages/asa/AsaConstructionPage'
 import { AsaManagementPage } from './pages/asa/AsaManagementPage'
-import { AuthenticationPage } from './pages/AuthenticationPage'
-import { getAuthenticationStatus, logout } from './api/authentication'
-import type { AuthenticationStatus } from './types/authentication'
+import { getFeatureConfiguration } from './api/features'
+import type { FeatureConfiguration } from './types/features'
 
 function App() {
   const [path, setPath] = useState(window.location.pathname)
-  const [authentication, setAuthentication] = useState<AuthenticationStatus | null>(null)
-  const [authenticationError, setAuthenticationError] = useState<string | null>(null)
-
-  const refreshAuthentication = async () => {
-    try {
-      setAuthentication(await getAuthenticationStatus())
-      setAuthenticationError(null)
-    } catch (error) {
-      setAuthenticationError(error instanceof Error ? error.message : '認証状態を確認できませんでした')
-    }
-  }
+  const [features, setFeatures] = useState<FeatureConfiguration | null>(null)
+  const [configurationError, setConfigurationError] = useState<string | null>(null)
 
   useEffect(() => {
-    void refreshAuthentication()
+    getFeatureConfiguration()
+      .then(setFeatures)
+      .catch((error: unknown) => setConfigurationError(error instanceof Error ? error.message : 'アプリ設定を取得できませんでした'))
     const updatePath = () => setPath(window.location.pathname)
-    const authenticationRequired = () => void refreshAuthentication()
     window.addEventListener('popstate', updatePath)
-    window.addEventListener('game-server-manager:authentication-required', authenticationRequired)
 
     if (window.location.pathname === '/') {
       window.history.replaceState({}, '', '/servers/new')
@@ -36,18 +26,14 @@ function App() {
 
     return () => {
       window.removeEventListener('popstate', updatePath)
-      window.removeEventListener('game-server-manager:authentication-required', authenticationRequired)
     }
   }, [])
 
-  if (authenticationError) {
-    return <main><p role="alert">{authenticationError}</p></main>
+  if (configurationError) {
+    return <main><p role="alert">{configurationError}</p></main>
   }
-  if (authentication === null) {
+  if (features === null) {
     return <main><p>読み込み中...</p></main>
-  }
-  if (!authentication.configured || !authentication.authenticated) {
-    return <AuthenticationPage status={authentication} onAuthenticated={refreshAuthentication} />
   }
 
   const page = (() => {
@@ -56,9 +42,9 @@ function App() {
     case '/servers/new':
       return <GameSelectionPage />
     case '/servers/new/palworld':
-      return <PalworldConstructionPage />
+      return <PalworldConstructionPage demoEnabled={features.demoEnabled} />
     case '/servers/new/asa':
-      return <AsaConstructionPage />
+      return <AsaConstructionPage demoEnabled={features.demoEnabled} />
     case '/servers/asa':
       return <AsaManagementPage />
     case '/servers/palworld':
@@ -68,19 +54,7 @@ function App() {
     }
   })()
 
-  const signOut = async () => {
-    await logout()
-    await refreshAuthentication()
-  }
-
-  return (
-    <>
-      <button className="logout-button" type="button" onClick={() => void signOut()}>
-        ログアウト
-      </button>
-      {page}
-    </>
-  )
+  return page
 }
 
 export default App

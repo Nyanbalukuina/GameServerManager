@@ -22,4 +22,10 @@ data class ConstructAsaRequest(
     val allowTailscale: Boolean = true,
     @field:Size(max = 2000) val customRemoteAddresses: String = "",
     val allowAnyRemoteAddress: Boolean = false,
+    @field:Min(0) @field:Max(100) val xpMultiplier: Double = 1.0,
+    @field:Min(0) @field:Max(100) val tamingSpeedMultiplier: Double = 1.0,
+    @field:Min(0) @field:Max(100) val harvestAmountMultiplier: Double = 1.0,
+    val pveEnabled: Boolean = true,
+    @field:Min(0) @field:Max(100) val eggHatchSpeedMultiplier: Double = 1.0,
+    @field:Min(0) @field:Max(100) val babyMatureSpeedMultiplier: Double = 1.0,
 )

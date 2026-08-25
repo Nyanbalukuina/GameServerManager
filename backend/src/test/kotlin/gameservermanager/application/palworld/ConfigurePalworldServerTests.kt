@@ -72,7 +72,7 @@ class ConfigurePalworldServerTests {
             installPath.resolve("DefaultPalWorldSettings.ini"),
             """
                 [/Script/Pal.PalGameWorldSettings]
-                OptionSettings=(ServerName="Default",ServerPlayerMaxNum=32,ServerPassword="",AdminPassword="",PublicPort=8211,RCONEnabled=False,RCONPort=25575,RESTAPIEnabled=False,RESTAPIPort=8212,bIsUseBackupSaveData=False)
+                OptionSettings=(ServerName="Default",ServerPlayerMaxNum=32,ServerPassword="",AdminPassword="",PublicPort=8211,RCONEnabled=False,RCONPort=25575,RESTAPIEnabled=False,RESTAPIPort=8212,bIsUseBackupSaveData=False,ServerDescription="",ExpRate=1.000000,PalCaptureRate=1.000000,PalSpawnNumRate=1.000000,EnemyDropItemRate=1.000000,PalEggDefaultHatchingTime=2.000000,DeathPenalty=All,bIsPvP=False,bEnableFriendlyFire=False,BaseCampMaxNum=128,BaseCampWorkerMaxNum=15)
             """.trimIndent(),
         )
         return installPath

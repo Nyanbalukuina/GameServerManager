@@ -1,5 +1,5 @@
 main {
-  width: min(760px, calc(100% - 32px));
+  width: min(880px, calc(100% - 32px));
   margin: 56px auto;
 }
 
@@ -7,6 +7,20 @@ main {
   display: inline-block;
   margin-bottom: 24px;
   color: #93c5fd;
+}
+
+.link-button {
+  width: auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.link-button:hover:not(:disabled) {
+  background: transparent;
+  text-decoration: underline;
 }
 
 .game-list {
@@ -41,6 +55,16 @@ header {
   margin-bottom: 32px;
 }
 
+.page-header {
+  padding: 8px 0 4px;
+}
+
+.page-header > p:last-child {
+  max-width: 680px;
+  color: #d1d5db;
+  line-height: 1.7;
+}
+
 .eyebrow {
   margin: 0 0 8px;
   color: #93c5fd;
@@ -66,9 +90,317 @@ h1 {
   background: #1f2937;
 }
 
+.section-heading,
+.server-overview-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.section-heading h2,
+.server-overview-heading h2 {
+  margin-bottom: 0;
+}
+
+.section-heading > p {
+  max-width: 420px;
+  margin: 2px 0 0;
+  color: #9ca3af;
+  line-height: 1.55;
+}
+
+.section-number {
+  margin: 0 0 4px;
+  color: #60a5fa;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
 .form-section {
   display: grid;
-  gap: 4px;
+  gap: 6px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 20px;
+}
+
+fieldset {
+  margin: 24px 0 0;
+  padding: 18px;
+  border: 1px solid #374151;
+  border-radius: 10px;
+}
+
+legend {
+  padding: 0 8px;
+  color: #dbeafe;
+  font-weight: 700;
+}
+
+textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 88px;
+  padding: 11px 13px;
+  border: 1px solid #4b5563;
+  border-radius: 8px;
+  background: #111827;
+  color: #f9fafb;
+  font: inherit;
+  resize: vertical;
+}
+
+.action-card {
+  border-color: #334e73;
+}
+
+.demo-card {
+  border-style: dashed;
+}
+
+.page-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 8px;
+}
+
+.server-overview-heading {
+  align-items: center;
+}
+
+.status-badge {
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 800;
+}
+
+.status-badge.running {
+  background: rgb(22 101 52 / 45%);
+  color: #86efac;
+}
+
+.status-badge.stopped {
+  background: rgb(55 65 81 / 80%);
+  color: #d1d5db;
+}
+
+.management-actions {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #374151;
+}
+
+.settings-save-panel {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.settings-save-panel .notice,
+.settings-save-panel .success-message {
+  margin: 0;
+}
+
+.settings-preview {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #4b5563;
+}
+
+.settings-preview h3,
+.settings-preview h4 {
+  margin-top: 0;
+}
+
+.settings-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.settings-preview-grid.three-column {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.setting-source {
+  margin: 0 0 8px;
+  color: #9ca3af;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.startup-settings {
+  border-style: dashed;
+}
+
+.settings-preview-grid > section {
+  padding: 1rem;
+  border: 1px solid #4b5563;
+  border-radius: 0.75rem;
+  background: rgb(17 24 39 / 45%);
+}
+
+.settings-editor-group {
+  margin-top: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid #4b5563;
+  border-radius: 0.75rem;
+  background: rgb(17 24 39 / 45%);
+}
+
+.settings-editor-group h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin-top: 0;
+}
+
+.settings-editor-group h3 span {
+  display: inline-grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  place-items: center;
+  border-radius: 999px;
+  background: #2563eb;
+  font-size: 0.85rem;
+}
+
+.construction-review-action {
+  display: grid;
+  justify-items: center;
+  gap: 0.75rem;
+  padding: 1rem 0 2rem;
+  text-align: center;
+}
+
+.construction-review-action button {
+  min-width: min(100%, 320px);
+  padding: 0.9rem 1.5rem;
+}
+
+.construction-review-action p {
+  margin: 0;
+  color: #d1d5db;
+}
+
+.compact-page {
+  margin-top: 32px;
+  margin-bottom: 32px;
+}
+
+.compact-page .back-link {
+  margin-bottom: 14px;
+}
+
+.compact-page .page-header {
+  margin-bottom: 14px;
+}
+
+.compact-page .page-header h1 {
+  margin: 0 0 6px;
+  font-size: clamp(1.65rem, 4vw, 2.25rem);
+}
+
+.compact-page .page-header > p:last-child {
+  margin: 0;
+  line-height: 1.5;
+}
+
+.compact-page .card {
+  margin-top: 14px;
+  padding: 17px 18px;
+  border-radius: 10px;
+}
+
+.compact-page .section-heading,
+.compact-page .server-overview-heading {
+  gap: 16px;
+  margin-bottom: 10px;
+}
+
+.compact-page .section-heading h2,
+.compact-page .server-overview-heading h2 {
+  font-size: 1.2rem;
+}
+
+.compact-page .section-heading > p {
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.compact-page .field {
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.compact-page input:not([type='checkbox']),
+.compact-page select {
+  height: 38px;
+  padding: 8px 10px;
+}
+
+.compact-page textarea {
+  padding: 8px 10px;
+}
+
+.compact-page .error {
+  min-height: 1em;
+  font-size: 0.82rem;
+}
+
+.compact-page fieldset {
+  margin-top: 14px;
+  padding: 12px 14px;
+}
+
+.compact-page .check-field {
+  margin-top: 10px;
+}
+
+.compact-page .settings-editor-group {
+  margin-top: 10px;
+  padding: 12px 14px;
+}
+
+.compact-page .settings-editor-group h3 {
+  margin-bottom: 6px;
+  font-size: 1rem;
+}
+
+.compact-page .settings-editor-group h3 span {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.compact-page .notice {
+  margin-top: 12px;
+  padding: 10px 12px;
+}
+
+.compact-page dl {
+  gap: 7px 18px;
+}
+
+.compact-page .settings-preview-grid > section {
+  padding: 12px 14px;
+}
+
+.compact-page button {
+  margin-top: 14px;
+  padding: 9px 15px;
+}
+
+.compact-page .construction-review-action {
+  gap: 6px;
+  padding: 12px 0 8px;
 }
 
 .field {
@@ -292,6 +624,24 @@ dd {
 
   dd {
     margin-bottom: 12px;
+  }
+
+  .section-heading,
+  .server-overview-heading {
+    display: grid;
+    gap: 8px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-preview-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .settings-preview-grid.three-column {
+    grid-template-columns: 1fr;
   }
 }
 .automation-toggle {

@@ -34,10 +34,15 @@ class ConfigureAsaServerTests {
             "RCONPort",
         )
         assertThat(report.toString()).doesNotContain("join-secret", "admin-secret")
-        assertThat(writer.command.sections["SessionSettings"])
+        val userSettings = writer.commands.first { it.settingsPath.fileName.toString() == "GameUserSettings.ini" }
+        val gameSettings = writer.commands.first { it.settingsPath.fileName.toString() == "Game.ini" }
+        assertThat(userSettings.sections["SessionSettings"])
             .containsEntry("SessionName", "GSM ASA Server")
-        assertThat(writer.command.sections["ServerSettings"])
+        assertThat(userSettings.sections["ServerSettings"])
             .containsEntry("RCONPort", "27020")
+        assertThat(gameSettings.sections["/Script/ShooterGame.ShooterGameMode"])
+            .containsEntry("EggHatchSpeedMultiplier", "1.0")
+            .containsEntry("BabyMatureSpeedMultiplier", "1.0")
     }
 
     @Test
@@ -72,11 +77,11 @@ class ConfigureAsaServerTests {
     // Writerへ渡された設定を記録する。
     private class RecordingConfigurationWriter : AsaConfigurationWriter {
         var called = false
-        lateinit var command: AsaConfigurationWriteCommand
+        val commands = mutableListOf<AsaConfigurationWriteCommand>()
 
         override fun write(command: AsaConfigurationWriteCommand): AsaConfigurationWriteResult {
             called = true
-            this.command = command
+            commands += command
 
             return AsaConfigurationWriteResult(
                 settingsPath = command.settingsPath.toString(),

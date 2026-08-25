@@ -6,7 +6,7 @@ import App from './App'
 describe('App', () => {
   beforeEach(() => {
     window.history.pushState({}, '', '/servers/new/palworld')
-    vi.stubGlobal('fetch', authenticatedFetch())
+    vi.stubGlobal('fetch', appFetch())
   })
 
   afterEach(() => {
@@ -38,7 +38,7 @@ describe('App', () => {
         'C:\\GameServerManager\\tools\\steamcmd',
       )
     })
-    expect(screen.getByRole('button', { name: '構築計画を確認' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'この設定でサーバー構築' })).toBeInTheDocument()
     expect(screen.getByLabelText('自動運転を有効にする')).not.toBeChecked()
     expect(screen.getByLabelText('同一LANを許可')).toBeChecked()
     expect(screen.getByLabelText('Tailscaleを許可（100.64.0.0/10）')).toBeChecked()
@@ -48,41 +48,28 @@ describe('App', () => {
     expect(screen.queryByText(/バックアップする/)).not.toBeInTheDocument()
   })
 
-  it('未設定の場合はlocalhost用の初回設定画面を表示する', async () => {
-    vi.stubGlobal('fetch', authenticationFetch({
-      configured: false,
-      authenticated: false,
-      username: null,
-      setupAllowed: true,
-    }))
+  it('配布版ではARKのデモ構築を表示しない', async () => {
+    window.history.pushState({}, '', '/servers/new/asa')
+    vi.stubGlobal('fetch', appFetch([response({ canProceed: true, checks: [] })], false))
 
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: '初回管理者設定' })).toBeInTheDocument()
-    expect(screen.getByLabelText('確認用パスワード')).toBeInTheDocument()
-  })
-
-  it('未ログインの場合はログイン画面を表示する', async () => {
-    vi.stubGlobal('fetch', authenticationFetch({
-      configured: true,
-      authenticated: false,
-      username: null,
-      setupAllowed: false,
-    }))
-
-    render(<App />)
-
-    expect(await screen.findByRole('heading', { name: 'ログイン' })).toBeInTheDocument()
-    expect(screen.queryByLabelText('確認用パスワード')).not.toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '新規ARKサーバー構築' })).toBeInTheDocument()
+    expect(screen.queryByText('デモ構築（画面と設定を確認）')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'この設定でサーバー構築' })).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'この設定でサーバー構築' }))
+    expect(await screen.findByRole('heading', { name: '構築内容の確認' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '事前検証結果' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'ARKサーバーを構築して起動' })).toBeInTheDocument()
   })
 
   it('作成済みPalworldの管理画面を表示する', async () => {
     window.history.pushState({}, '', '/servers/palworld')
     render(<App />)
 
-    expect(await screen.findByRole('heading', { name: 'Palworldサーバー管理' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'サーバー管理' })).toBeInTheDocument()
     expect(await screen.findByRole('heading', { name: 'Demo Palworld' })).toBeInTheDocument()
-    expect(screen.getByText('停止中')).toBeInTheDocument()
+    expect(screen.getAllByText('停止中')).not.toHaveLength(0)
     expect(screen.getByRole('button', { name: '起動' })).toBeEnabled()
     expect(await screen.findByRole('heading', { name: 'ワールド設定' })).toBeInTheDocument()
     expect(screen.getByText('admin-password')).toBeInTheDocument()
@@ -91,7 +78,7 @@ describe('App', () => {
 
   it('APIが成功した場合は構築計画を表示する', async () => {
     const user = userEvent.setup()
-    vi.stubGlobal('fetch', authenticatedFetch([
+    vi.stubGlobal('fetch', appFetch([
       response({
           serverName: 'Palworld Server',
           installPath: 'C:\\GameServerManager\\servers\\palworld\\main\\runtime',
@@ -106,23 +93,24 @@ describe('App', () => {
           startupTime: '09:00',
           gamePortAccess: defaultGamePortAccess(),
       }),
+      response({ canProceed: true, checks: [] }),
     ]))
     render(<App />)
 
     await user.type(await screen.findByLabelText('サーバー名'), 'Palworld Server')
     await user.type(screen.getByLabelText('管理者パスワード'), 'admin-password')
-    await user.click(screen.getByRole('button', { name: '構築計画を確認' }))
+    await user.click(screen.getByRole('button', { name: 'この設定でサーバー構築' }))
 
-    expect(await screen.findByRole('heading', { name: '構築計画' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: '構築内容の確認' })).toBeInTheDocument()
     expect(
       screen.getByText('C:\\GameServerManager\\servers\\palworld\\main\\runtime'),
     ).toBeInTheDocument()
-    expect(screen.queryByText('admin-password')).not.toBeInTheDocument()
+    expect(screen.getByText('admin-password')).toBeInTheDocument()
   })
 
   it('APIの入力エラーをフォームへ表示する', async () => {
     const user = userEvent.setup()
-    vi.stubGlobal('fetch', authenticatedFetch([
+    vi.stubGlobal('fetch', appFetch([
       response(
           { errors: { serverName: 'サーバー名を入力してください' } },
           400,
@@ -130,14 +118,14 @@ describe('App', () => {
     ]))
     render(<App />)
 
-    await user.click(await screen.findByRole('button', { name: '構築計画を確認' }))
+    await user.click(await screen.findByRole('button', { name: 'この設定でサーバー構築' }))
 
     expect(await screen.findByText('サーバー名を入力してください')).toBeInTheDocument()
   })
 
   it('事前検証後にパスワードを最終送信してデモ構築結果を表示する', async () => {
     const user = userEvent.setup()
-    const fetchMock = authenticatedFetch([
+    const fetchMock = appFetch([
         response({
           serverName: 'Palworld Server',
           installPath: 'C:\\GameServerManager\\servers\\palworld\\main\\runtime',
@@ -197,30 +185,29 @@ describe('App', () => {
 
     await user.type(await screen.findByLabelText('サーバー名'), 'Palworld Server')
     await user.type(screen.getByLabelText('管理者パスワード'), 'admin-password')
-    await user.click(screen.getByRole('button', { name: '構築計画を確認' }))
-    await screen.findByRole('heading', { name: '構築計画' })
-    await user.click(screen.getByRole('button', { name: '事前検証を実行' }))
+    await user.click(screen.getByRole('button', { name: 'この設定でサーバー構築' }))
+    await screen.findByRole('heading', { name: '構築内容の確認' })
 
     expect(await screen.findByText('修正が必要な項目があります')).toBeInTheDocument()
     expect(screen.getByText('ゲームポート UDP 8211')).toBeInTheDocument()
     expect(screen.getByText('SteamCMDは構築時にダウンロードされます')).toBeInTheDocument()
     expect(
-      screen.getByText('実構築には修正が必要ですが、デモ構築は一時領域で実行できます。'),
+      screen.getByText('実構築には修正が必要ですが、デモ構築は実行できます。'),
     ).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'デモサーバーを作成' }))
+    await user.click(screen.getByRole('button', { name: 'デモサーバーを構築' }))
 
-    expect(await screen.findByText('デモサーバーを作成しました')).toBeInTheDocument()
+    expect(await screen.findByText('Palworldデモサーバーを作成しました')).toBeInTheDocument()
     expect(screen.getByText('デモSteamCMDを一時領域へ配置しました')).toBeInTheDocument()
     const finalCall = fetchMock.mock.calls.find(([input]) => String(input).includes('/demo'))
     const finalRequest = JSON.parse(String(finalCall?.[1]?.body))
     expect(finalRequest.adminPassword).toBe('admin-password')
-    expect(screen.queryByText('admin-password')).not.toBeInTheDocument()
+    expect(screen.getByText('admin-password')).toBeInTheDocument()
   })
 
   it('事前検証成功後に実Palworldサーバーを構築して起動する', async () => {
     const user = userEvent.setup()
-    vi.stubGlobal('fetch', authenticatedFetch([
+    vi.stubGlobal('fetch', appFetch([
       response({
         serverName: 'Palworld Server',
         installPath: 'C:\\GameServerManager\\servers\\palworld\\main\\runtime',
@@ -252,9 +239,9 @@ describe('App', () => {
 
     await user.type(await screen.findByLabelText('サーバー名'), 'Palworld Server')
     await user.type(screen.getByLabelText('管理者パスワード'), 'admin-password')
-    await user.click(screen.getByRole('button', { name: '構築計画を確認' }))
-    await user.click(await screen.findByRole('button', { name: '事前検証を実行' }))
+    await user.click(screen.getByRole('button', { name: 'この設定でサーバー構築' }))
     await screen.findByText('構築を進められる環境です')
+    await user.selectOptions(screen.getByLabelText('構築の種類'), 'REAL')
     await user.click(screen.getByRole('button', { name: 'Palworldサーバーを構築して起動' }))
 
     expect(await screen.findByText('Palworldサーバーを構築して起動しました')).toBeInTheDocument()
@@ -270,25 +257,21 @@ function response(body: unknown, status = 200): Response {
   })
 }
 
-function authenticatedFetch(applicationResponses: Response[] = []) {
+function appFetch(applicationResponses: Response[] = [], demoEnabled = true) {
   const queue = [...applicationResponses]
   return vi.fn(async (input: RequestInfo | URL, _init?: RequestInit) => {
     const url = String(input)
-    if (url === '/api/auth/status') {
-      return response({
-        configured: true,
-        authenticated: true,
-        username: 'admin',
-        setupAllowed: false,
-      })
-    }
-    if (url === '/api/auth/csrf') {
+    if (url === '/api/security/csrf') {
       return response({ token: 'test-csrf-token', headerName: 'X-CSRF-TOKEN' })
+    }
+    if (url === '/api/configuration/features') {
+      return response({ demoEnabled })
     }
     if (url === '/api/configuration/storage') {
       return response({
         root: 'C:\\GameServerManager',
         palworldInstallPath: 'C:\\GameServerManager\\servers\\palworld\\main\\runtime',
+        asaInstallPath: 'C:\\GameServerManager\\servers\\asa\\main\\runtime',
         steamCmdPath: 'C:\\GameServerManager\\tools\\steamcmd',
       })
     }
@@ -357,18 +340,4 @@ function defaultGamePortAccess() {
     customRemoteAddresses: [],
     allowAny: false,
   }
-}
-
-function authenticationFetch(status: {
-  configured: boolean
-  authenticated: boolean
-  username: string | null
-  setupAllowed: boolean
-}) {
-  return vi.fn(async (input: RequestInfo | URL) => {
-    if (String(input) === '/api/auth/status') {
-      return response(status)
-    }
-    return response({ token: 'test-csrf-token', headerName: 'X-CSRF-TOKEN' })
-  })
 }

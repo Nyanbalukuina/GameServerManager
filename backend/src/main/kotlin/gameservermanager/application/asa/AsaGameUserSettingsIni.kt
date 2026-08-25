@@ -2,6 +2,19 @@ package gameservermanager.application.asa
 
 // ASAのGameUserSettings.iniを更新する。
 object AsaGameUserSettingsIni {
+    fun read(original: String, section: String, key: String): String? {
+        val lines = original.replace("\r\n", "\n").split('\n')
+        val header = "[$section]"
+        val sectionStart = lines.indexOfFirst { it.trim().equals(header, ignoreCase = true) }
+        if (sectionStart == -1) return null
+        val sectionEnd = lines.indexOfFirstFrom(sectionStart + 1) { isSectionHeader(it) }
+            .let { if (it == -1) lines.size else it }
+        return lines.subList(sectionStart + 1, sectionEnd)
+            .firstOrNull { it.substringBefore('=', "").trim().equals(key, ignoreCase = true) }
+            ?.substringAfter('=', "")
+            ?.trim()
+    }
+
     // 指定されたセクションと設定値を更新し、存在しない設定は追加する。
     fun update(original: String, sections: Map<String, Map<String, String>>): String {
         val newline = if (original.contains("\r\n")) "\r\n" else "\n"

@@ -28,6 +28,7 @@ lerna-debug.log*
 *.njsproj
 *.sln
 *.sw?
+*.exe
 
 .DS_Store
 Thumbs.db

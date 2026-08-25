@@ -6,6 +6,7 @@ import gameservermanager.application.asa.StartAsaServer
 import gameservermanager.application.asa.StopAsaServer
 import gameservermanager.application.asa.DeleteAsaServer
 import gameservermanager.application.server.GameServerRegistrationStore
+import gameservermanager.configuration.FeatureProperties
 import gameservermanager.domain.asa.AsaServerStatus
 import gameservermanager.domain.asa.AsaServerState
 import gameservermanager.domain.server.GameServerRegistration
@@ -30,6 +31,7 @@ class AsaServerController(
     private val restartServer: RestartAsaServer,
     private val deleteServer: DeleteAsaServer,
     private val registrationStore: GameServerRegistrationStore,
+    private val features: FeatureProperties,
 ) {
     @GetMapping
     fun get(): GameServerRegistration = registration()
@@ -88,7 +90,7 @@ class AsaServerController(
 
     private fun registration() = requireNotNull(registrationStore.findByGame("ASA")) {
         "ASAサーバーは登録されていません"
-    }
+    }.also { require(features.demoEnabled || it.mode != "DEMO") { "ASAサーバーは登録されていません" } }
 
     private fun updateDemo(server: GameServerRegistration, state: String, message: String): AsaServerStatus {
         val updated = server.copy(state = state)

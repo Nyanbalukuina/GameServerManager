@@ -56,6 +56,17 @@ class FileSystemDemoServerConfigurator(
                 "ServerPlayerMaxNum" to command.maxPlayers.toString(),
                 "ServerPassword" to PalworldSettingsIni.quoted(command.serverPassword),
                 "AdminPassword" to PalworldSettingsIni.quoted(command.adminPassword),
+                "ServerDescription" to PalworldSettingsIni.quoted(command.serverDescription),
+                "ExpRate" to command.expRate.toString(),
+                "PalCaptureRate" to command.palCaptureRate.toString(),
+                "PalSpawnNumRate" to command.palSpawnRate.toString(),
+                "EnemyDropItemRate" to command.enemyDropRate.toString(),
+                "PalEggDefaultHatchingTime" to command.eggHatchingTime.toString(),
+                "DeathPenalty" to command.deathPenalty,
+                "bIsPvP" to command.pvpEnabled.toString().replaceFirstChar(Char::uppercase),
+                "bEnableFriendlyFire" to command.friendlyFireEnabled.toString().replaceFirstChar(Char::uppercase),
+                "BaseCampMaxNum" to command.baseCampMaxNum.toString(),
+                "BaseCampWorkerMaxNum" to command.baseCampWorkerMaxNum.toString(),
             ),
         )
     }

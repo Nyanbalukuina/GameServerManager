@@ -4,6 +4,7 @@ import gameservermanager.application.construction.CreateGamePortAccess
 import gameservermanager.application.construction.RunDemoServerConstruction
 import gameservermanager.domain.construction.DemoConstructionReport
 import jakarta.validation.Valid
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
@@ -11,6 +12,11 @@ import org.springframework.web.bind.annotation.RestController
 
 @RestController
 @RequestMapping("/api/server-constructions/demo")
+@ConditionalOnProperty(
+    prefix = "game-server-manager.features",
+    name = ["demo-enabled"],
+    havingValue = "true",
+)
 class DemoServerConstructionController(
     private val runDemoServerConstruction: RunDemoServerConstruction,
 ) {
@@ -34,6 +40,12 @@ class DemoServerConstructionController(
                 customRemoteAddresses = request.customRemoteAddresses,
                 allowAny = request.allowAnyRemoteAddress,
             ),
+            serverDescription = request.serverDescription,
+            expRate = request.expRate, palCaptureRate = request.palCaptureRate,
+            palSpawnRate = request.palSpawnRate, enemyDropRate = request.enemyDropRate,
+            eggHatchingTime = request.eggHatchingTime, deathPenalty = request.deathPenalty,
+            pvpEnabled = request.pvpEnabled, friendlyFireEnabled = request.friendlyFireEnabled,
+            baseCampMaxNum = request.baseCampMaxNum, baseCampWorkerMaxNum = request.baseCampWorkerMaxNum,
         )
 
         return runDemoServerConstruction.execute(command)

@@ -24,8 +24,8 @@ SteamCMDの準備、ゲームサーバーのインストール、設定ファイ
 - ゲームごとの初期設定ファイル生成
 - 接続元を限定したWindows Firewall受信規則
 - サーバーの起動、状態確認、安全停止、再起動
-- Cookieセッション認証とCSRF保護
-- 実環境を変更せず操作を確認できるデモモード
+- localhost限定公開とCSRF保護
+- 開発時に実環境を変更せず操作を確認できるデモモード
 - 管理データ、ログ、バックアップのローカル保存
 
 ## 技術スタック
@@ -42,7 +42,7 @@ SteamCMDの準備、ゲームサーバーのインストール、設定ファイ
 Reactフロントエンド
   ↓ REST API
 Spring Bootバックエンド
-  ├─ 認証・入力検証・構築処理
+  ├─ 入力検証・構築処理
   ├─ SteamCMD・プロセス管理
   ├─ 設定・ログ・バックアップ
   └─ Windows Firewall連携
@@ -89,7 +89,7 @@ cd frontend
 npm.cmd run dev
 ```
 
-ブラウザで `http://localhost:5173` を開き、初回管理者を設定します。Viteは `/api` を `http://localhost:8080` へ転送します。
+ブラウザで `http://localhost:5173` を開きます。ログイン設定は不要です。Viteは `/api` を `http://localhost:8080` へ転送します。
 
 ## テスト
 
@@ -158,6 +158,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 | `GAME_SERVER_MANAGER_ADDRESS` | `127.0.0.1` | 管理画面の待受アドレス |
 | `GAME_SERVER_MANAGER_PORT` | `8080` | 管理画面のポート |
 | `GAME_SERVER_MANAGER_SECURE_COOKIE` | `false` | CookieのSecure属性 |
+| `GAME_SERVER_MANAGER_DEMO_ENABLED` | `true` | 開発用デモ機能の有効化 |
 
 管理データは管理ルート配下の `config`、`logs`、`backups`、`tools`、`servers` に保存します。
 
@@ -170,6 +171,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 - RCONとゲーム管理APIは外部公開せず、localhostから使用します。
 - パスワードはログ、操作履歴、通常のAPIレスポンスへ出力しません。
 - デモモードではSteamCMD、実サーバー、Firewall、タスクスケジューラを変更しません。
+- Windows配布版ではデモ画面とデモAPIを無効化します。
 
 ## ディレクトリ構成
 

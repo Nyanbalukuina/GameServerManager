@@ -13,6 +13,11 @@ export async function constructAsaServer(request: AsaConstructionRequest): Promi
         queryPort: toNumber(request.queryPort),
         rconPort: toNumber(request.rconPort),
         maxPlayers: toNumber(request.maxPlayers),
+        xpMultiplier: toDecimal(request.xpMultiplier),
+        tamingSpeedMultiplier: toDecimal(request.tamingSpeedMultiplier),
+        harvestAmountMultiplier: toDecimal(request.harvestAmountMultiplier),
+        eggHatchSpeedMultiplier: toDecimal(request.eggHatchSpeedMultiplier),
+        babyMatureSpeedMultiplier: toDecimal(request.babyMatureSpeedMultiplier),
       }),
     })
 
@@ -50,7 +55,18 @@ function numericRequest(request: AsaConstructionRequest) {
   return {
     ...request, gamePort: toNumber(request.gamePort), queryPort: toNumber(request.queryPort),
     rconPort: toNumber(request.rconPort), maxPlayers: toNumber(request.maxPlayers),
+    xpMultiplier: toDecimal(request.xpMultiplier),
+    tamingSpeedMultiplier: toDecimal(request.tamingSpeedMultiplier),
+    harvestAmountMultiplier: toDecimal(request.harvestAmountMultiplier),
+    eggHatchSpeedMultiplier: toDecimal(request.eggHatchSpeedMultiplier),
+    babyMatureSpeedMultiplier: toDecimal(request.babyMatureSpeedMultiplier),
   }
+}
+
+function toDecimal(value: string): number | null {
+  if (value.trim() === '') return null
+  const number = Number(value)
+  return Number.isFinite(number) ? number : null
 }
 
 function toNumber(value: string): number | null {

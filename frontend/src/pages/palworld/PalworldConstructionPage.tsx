@@ -36,17 +36,26 @@ const initialForm: NewServerRequest = {
   allowTailscale: true,
   customRemoteAddresses: '',
   allowAnyRemoteAddress: false,
+  serverDescription: '',
+  expRate: 1,
+  palCaptureRate: 1,
+  palSpawnRate: 1,
+  enemyDropRate: 1,
+  eggHatchingTime: 2,
+  deathPenalty: 'All',
+  pvpEnabled: false,
+  friendlyFireEnabled: false,
+  baseCampMaxNum: 128,
+  baseCampWorkerMaxNum: 15,
 }
 
-export function PalworldConstructionPage() {
+export function PalworldConstructionPage({ demoEnabled }: { demoEnabled: boolean }) {
   const [form               , setForm               ] = useState(initialForm)
   const [storageError       , setStorageError       ] = useState<string | null>(null)
   const [plan               , setPlan               ] = useState<ServerConstructionPlanType | null>(null)
   const [preflight          , setPreflight          ] = useState<ServerPreflightReport | null>(null)
-  const [preflightError     , setPreflightError     ] = useState<string | null>(null)
   const [errors             , setErrors             ] = useState<ValidationErrors>({})
   const [isSubmitting       , setIsSubmitting       ] = useState(false)
-  const [isChecking         , setIsChecking         ] = useState(false)
   const [isConstructing     , setIsConstructing     ] = useState(false)
   const [constructionKind   , setConstructionKind   ] = useState<'REAL' | 'DEMO' | null>(null)
   const [constructionReport , setConstructionReport ] = useState<DemoConstructionReport | null>(null)
@@ -82,7 +91,7 @@ export function PalworldConstructionPage() {
     return () => window.removeEventListener('beforeunload', warnBeforeLeaving)
   }, [isConstructing])
 
-  const updateField = (field: keyof NewServerRequest, value: string | boolean) => {
+  const updateField = (field: keyof NewServerRequest, value: string | number | boolean) => {
     setForm((current) => ({ ...current, [field]: value }))
     setErrors((current) => ({ ...current, [field]: undefined }))
   }
@@ -93,30 +102,18 @@ export function PalworldConstructionPage() {
 
     const result = await createServerConstructionPlan(form)
     if (result.ok) {
-      setPlan(result.plan)
+      const preflightResult = await runServerPreflight(result.plan)
+      if (preflightResult.ok) {
+        setPreflight(preflightResult.report)
+        setPlan(result.plan)
+      } else {
+        setErrors({ request: preflightResult.message })
+      }
     } else {
       setErrors(result.errors)
     }
 
     setIsSubmitting(false)
-  }
-
-  const checkEnvironment = async () => {
-    if (!plan) {
-      return
-    }
-
-    setIsChecking(true)
-    setPreflightError(null)
-    setConstructionReport(null)
-    setConstructionError(null)
-    const result = await runServerPreflight(plan)
-    if (result.ok) {
-      setPreflight(result.report)
-    } else {
-      setPreflightError(result.message)
-    }
-    setIsChecking(false)
   }
 
   const runDemoConstruction = async () => {
@@ -127,11 +124,6 @@ export function PalworldConstructionPage() {
     const result = await runDemoServerConstruction(form)
     if (result.ok) {
       setConstructionReport(result.report)
-      setForm((current) => ({
-        ...current,
-        serverPassword: '',
-        adminPassword: '',
-      }))
     } else {
       setConstructionError(result.errors.request ?? 'デモ構築を実行できませんでした')
     }
@@ -147,7 +139,6 @@ export function PalworldConstructionPage() {
     const result = await constructPalworldServer(form)
     if (result.ok) {
       setRealReport(result.report)
-      setForm((current) => ({ ...current, serverPassword: '', adminPassword: '' }))
     } else {
       setConstructionError(result.errors.request ?? 'Palworldサーバーを構築できませんでした')
     }
@@ -158,14 +149,13 @@ export function PalworldConstructionPage() {
   const returnToForm = () => {
     setPlan(null)
     setPreflight(null)
-    setPreflightError(null)
     setConstructionReport(null)
     setRealReport(null)
     setConstructionError(null)
   }
 
   return (
-    <main>
+    <main className="compact-page">
       <AppLink className="back-link" href="/servers/new">
         ゲーム選択へ戻る
       </AppLink>
@@ -182,17 +172,18 @@ export function PalworldConstructionPage() {
         <PalworldConstructionPlan
           plan={plan}
           preflight={preflight}
-          preflightError={preflightError}
-          isChecking={isChecking}
           isConstructing={isConstructing}
           constructionKind={constructionKind}
           constructionReport={constructionReport}
           realReport={realReport}
           constructionError={constructionError}
-          onCheckEnvironment={checkEnvironment}
           onRunDemoConstruction={runDemoConstruction}
           onRunRealConstruction={runRealConstruction}
           onReturnToForm={returnToForm}
+          demoEnabled={demoEnabled}
+          serverPassword={form.serverPassword}
+          adminPassword={form.adminPassword}
+          worldSettings={form}
         />
       ) : (
         <>

@@ -24,6 +24,9 @@ class AsaConstructionController(private val constructAsaServer: ConstructAsaServ
                     request.allowLocalSubnet, request.allowTailscale,
                     request.customRemoteAddresses, request.allowAnyRemoteAddress,
                 ),
+                request.pveEnabled, request.xpMultiplier,
+                request.tamingSpeedMultiplier, request.harvestAmountMultiplier,
+                request.eggHatchSpeedMultiplier, request.babyMatureSpeedMultiplier,
             ),
         )
     }

@@ -13,7 +13,7 @@ import java.nio.file.StandardCopyOption
 import java.time.Clock
 import java.time.format.DateTimeFormatter
 
-// GameUserSettings.iniをファイルシステムへ保存する。
+// ASAのINIファイルをファイルシステムへ保存する。
 @Component
 class FileSystemAsaConfigurationWriter() : AsaConfigurationWriter {
     private var clock: Clock = Clock.systemUTC()
@@ -52,7 +52,7 @@ class FileSystemAsaConfigurationWriter() : AsaConfigurationWriter {
         )
     }
 
-    // 既存のGameUserSettings.iniがある場合だけバックアップする。
+    // 既存のINIファイルがある場合だけバックアップする。
     private fun backupExistingSettings(command: AsaConfigurationWriteCommand): Path? {
         if (!Files.isRegularFile(command.settingsPath)) return null
 
@@ -60,7 +60,8 @@ class FileSystemAsaConfigurationWriter() : AsaConfigurationWriter {
         val timestamp = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss-SSS")
             .withZone(clock.zone)
             .format(clock.instant())
-        val backupPath = command.backupDirectory.resolve("GameUserSettings-$timestamp.ini")
+        val baseName = command.settingsPath.fileName.toString().substringBeforeLast('.')
+        val backupPath = command.backupDirectory.resolve("$baseName-$timestamp.ini")
         Files.copy(command.settingsPath, backupPath)
 
         return backupPath

@@ -1,9 +1,9 @@
-import type { CsrfToken } from '../types/authentication'
+import type { CsrfToken } from '../types/security'
 
 let csrfToken: CsrfToken | null = null
 
 export async function initializeCsrf(): Promise<void> {
-  const response = await fetch('/api/auth/csrf', { credentials: 'same-origin' })
+  const response = await fetch('/api/security/csrf', { credentials: 'same-origin' })
   if (!response.ok) {
     throw new Error('セキュリティトークンを取得できませんでした')
   }
@@ -28,9 +28,6 @@ export async function apiFetch(input: RequestInfo | URL, init: RequestInit = {})
   })
   if (response.status === 403 && !['GET', 'HEAD', 'OPTIONS'].includes(method)) {
     csrfToken = null
-  }
-  if (response.status === 401) {
-    window.dispatchEvent(new Event('game-server-manager:authentication-required'))
   }
   return response
 }

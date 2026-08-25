@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Pattern
 import jakarta.validation.constraints.Size
+import jakarta.validation.constraints.DecimalMax
+import jakarta.validation.constraints.DecimalMin
 
 data class NewServerRequest(
     @field:NotBlank(message = "サーバー名を入力してください")
@@ -59,4 +61,16 @@ data class NewServerRequest(
     val customRemoteAddresses: String = "",
 
     val allowAnyRemoteAddress: Boolean = false,
+
+    @field:Size(max = 500) val serverDescription: String = "",
+    @field:DecimalMin("0.1") @field:DecimalMax("5.0") val expRate: Double = 1.0,
+    @field:DecimalMin("0.1") @field:DecimalMax("5.0") val palCaptureRate: Double = 1.0,
+    @field:DecimalMin("0.1") @field:DecimalMax("3.0") val palSpawnRate: Double = 1.0,
+    @field:DecimalMin("0.1") @field:DecimalMax("5.0") val enemyDropRate: Double = 1.0,
+    @field:DecimalMin("0.0") @field:DecimalMax("240.0") val eggHatchingTime: Double = 2.0,
+    @field:Pattern(regexp = "None|Item|ItemAndEquipment|All") val deathPenalty: String = "All",
+    val pvpEnabled: Boolean = false,
+    val friendlyFireEnabled: Boolean = false,
+    @field:Min(1) @field:Max(128) val baseCampMaxNum: Int = 128,
+    @field:Min(1) @field:Max(50) val baseCampWorkerMaxNum: Int = 15,
 )

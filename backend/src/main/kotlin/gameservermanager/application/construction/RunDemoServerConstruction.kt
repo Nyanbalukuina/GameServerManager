@@ -54,6 +54,12 @@ class RunDemoServerConstruction(
                 shutdownTime = command.shutdownTime,
                 startupTime = command.startupTime,
                 gamePortAccess = gamePortAccess,
+                serverDescription = command.serverDescription,
+                expRate = command.expRate, palCaptureRate = command.palCaptureRate,
+                palSpawnRate = command.palSpawnRate, enemyDropRate = command.enemyDropRate,
+                eggHatchingTime = command.eggHatchingTime, deathPenalty = command.deathPenalty,
+                pvpEnabled = command.pvpEnabled, friendlyFireEnabled = command.friendlyFireEnabled,
+                baseCampMaxNum = command.baseCampMaxNum, baseCampWorkerMaxNum = command.baseCampWorkerMaxNum,
             ),
         )
         registrationStore.create(
@@ -110,6 +116,17 @@ class RunDemoServerConstruction(
         val shutdownTime: String,
         val startupTime: String,
         val gamePortAccess: CreateGamePortAccess.Command,
+        val serverDescription: String = "",
+        val expRate: Double = 1.0,
+        val palCaptureRate: Double = 1.0,
+        val palSpawnRate: Double = 1.0,
+        val enemyDropRate: Double = 1.0,
+        val eggHatchingTime: Double = 2.0,
+        val deathPenalty: String = "All",
+        val pvpEnabled: Boolean = false,
+        val friendlyFireEnabled: Boolean = false,
+        val baseCampMaxNum: Int = 128,
+        val baseCampWorkerMaxNum: Int = 15,
     )
 
     companion object {
