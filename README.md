@@ -119,6 +119,8 @@ JARは `backend/build/libs` に生成されます。
 
 ## Windows配布物
 
+配布用EXEインストーラーの作成、動作確認、GitHub Releasesへの公開手順は、[Windows配布手順](_Document/Windows配布手順.md)を参照してください。
+
 Java 21ランタイム、実行可能JAR、Windows連携スクリプトを含む配布物を生成します。
 
 ```powershell
@@ -188,3 +190,4 @@ GameServerManager/
 - [共通部分の仕様書](_Document/共通部分の仕様書.md)
 - [ARK用設計仕様書](_Document/ARK用設計仕様書.md)
 - [パルワールド用設計仕様書](_Document/パルワールド用設計仕様書.md)
+- [Windows配布手順](_Document/Windows配布手順.md)
