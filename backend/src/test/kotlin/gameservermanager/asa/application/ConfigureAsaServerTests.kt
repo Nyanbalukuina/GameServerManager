@@ -43,6 +43,7 @@ class ConfigureAsaServerTests {
         assertThat(gameSettings.sections["/Script/ShooterGame.ShooterGameMode"])
             .containsEntry("EggHatchSpeedMultiplier", "1.0")
             .containsEntry("BabyMatureSpeedMultiplier", "1.0")
+            .containsEntry("bUseSingleplayerSettings", "True")
     }
 
     @Test
@@ -71,6 +72,7 @@ class ConfigureAsaServerTests {
             rconPort = 27020,
             serverPassword = "join-secret",
             adminPassword = "admin-secret",
+            useSingleplayerSettings = true,
         )
     }
 

@@ -32,10 +32,12 @@ class AsaGameplaySettingsController(private val settings: ManageAsaGameplaySetti
         @field:DecimalMin("0.1") @field:DecimalMax("100.0") val harvestAmountMultiplier: Double = 1.0,
         @field:DecimalMin("0.1") @field:DecimalMax("100.0") val eggHatchSpeedMultiplier: Double = 1.0,
         @field:DecimalMin("0.1") @field:DecimalMax("100.0") val babyMatureSpeedMultiplier: Double = 1.0,
+        val useSingleplayerSettings: Boolean = false,
     ) {
         fun toSettings() = ManageAsaGameplaySettings.Settings(
             serverName, maxPlayers, pveEnabled, xpMultiplier, tamingSpeedMultiplier, harvestAmountMultiplier,
             eggHatchSpeedMultiplier, babyMatureSpeedMultiplier,
+            useSingleplayerSettings,
         )
     }
 }

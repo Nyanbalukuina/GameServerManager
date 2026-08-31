@@ -31,6 +31,7 @@ const initialRequest: AsaConstructionRequest = {
   harvestAmountMultiplier: '1',
   eggHatchSpeedMultiplier: '1',
   babyMatureSpeedMultiplier: '1',
+  useSingleplayerSettings: false,
 }
 
 export function AsaConstructionPage({ demoEnabled, onStartConstruction }: { demoEnabled: boolean; onStartConstruction: (execution: ConstructionExecution) => void }) {
@@ -52,6 +53,10 @@ export function AsaConstructionPage({ demoEnabled, onStartConstruction }: { demo
         request: error instanceof Error ? error.message : '保存先を取得できませんでした',
       }))
   }, [])
+
+  useEffect(() => {
+    if (reviewing) window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+  }, [reviewing])
 
   const set = <K extends keyof AsaConstructionRequest>(key: K, value: AsaConstructionRequest[K]) => {
     setRequest((current) => ({ ...current, [key]: value }))
@@ -96,10 +101,10 @@ export function AsaConstructionPage({ demoEnabled, onStartConstruction }: { demo
 
         <section className="card">
           <div className="section-heading"><div><p className="section-number">02</p><h2>ゲーム設定</h2></div><p>ファイルごとに保存される設定を確認できます。</p></div>
-          <div className="settings-preview-grid three-column">
+          <div className="settings-preview-stack">
             <section><h3>起動設定</h3><p className="setting-source">INIファイルではなく起動時に指定</p><dl><dt>マップ</dt><dd>{mapLabel(request.map)}</dd><dt>最大プレイヤー数</dt><dd>{request.maxPlayers}</dd></dl></section>
             <section><h3>GameUserSettings.ini</h3><dl><dt>サーバー名</dt><dd>{request.serverName}</dd><dt>ゲームモード</dt><dd>{request.pveEnabled ? 'PvE' : 'PvP'}</dd><dt>経験値倍率</dt><dd>{request.xpMultiplier}</dd><dt>テイム速度</dt><dd>{request.tamingSpeedMultiplier}</dd><dt>採取量倍率</dt><dd>{request.harvestAmountMultiplier}</dd></dl></section>
-            <section><h3>Game.ini</h3><dl><dt>孵化速度</dt><dd>{request.eggHatchSpeedMultiplier}</dd><dt>赤ちゃんの成熟速度</dt><dd>{request.babyMatureSpeedMultiplier}</dd></dl></section>
+            <section><h3>Game.ini</h3><dl><dt>孵化速度</dt><dd>{request.eggHatchSpeedMultiplier}</dd><dt>赤ちゃんの成熟速度</dt><dd>{request.babyMatureSpeedMultiplier}</dd><dt>少人数・シングル向け補正</dt><dd>{request.useSingleplayerSettings ? '有効' : '無効'}</dd></dl></section>
           </div>
         </section>
 
@@ -138,7 +143,7 @@ export function AsaConstructionPage({ demoEnabled, onStartConstruction }: { demo
         <div className="section-heading"><div><p className="section-number">02</p><h2>ゲーム設定</h2></div><p>起動引数とINIファイルの役割ごとに設定します。</p></div>
         <div className="settings-editor-group startup-settings"><h3>起動設定</h3><p className="setting-source">マップと最大人数はINIではなく、ARKサーバーの起動時に指定されます。</p><div className="form-grid"><label className="field" htmlFor="asaMap">マップ<select id="asaMap" value={request.map} onChange={(event) => set('map', event.target.value as 'TheIsland_WP')}><option value="TheIsland_WP">The Island</option></select><span className="error" aria-hidden="true" /></label><FormField id="asaMaxPlayers" label="最大プレイヤー数" type="number" value={request.maxPlayers} error={errors.maxPlayers} onChange={(value) => set('maxPlayers', value)} /></div></div>
         <div className="settings-editor-group"><h3><span>1</span>GameUserSettings.ini</h3><FormField id="asaServerName" label="サーバー名" value={request.serverName} error={errors.serverName} onChange={(value) => set('serverName', value)} /><label className="field" htmlFor="asaGameMode">ゲームモード<select id="asaGameMode" value={request.pveEnabled ? 'PVE' : 'PVP'} onChange={(event) => set('pveEnabled', event.target.value === 'PVE')}><option value="PVE">PvE</option><option value="PVP">PvP</option></select></label><div className="form-grid"><FormField id="asaXpMultiplier" label="経験値倍率" type="number" value={request.xpMultiplier} error={errors.xpMultiplier} onChange={(value) => set('xpMultiplier', value)} /><FormField id="asaTamingSpeedMultiplier" label="テイム速度" type="number" value={request.tamingSpeedMultiplier} error={errors.tamingSpeedMultiplier} onChange={(value) => set('tamingSpeedMultiplier', value)} /><FormField id="asaHarvestAmountMultiplier" label="採取量倍率" type="number" value={request.harvestAmountMultiplier} error={errors.harvestAmountMultiplier} onChange={(value) => set('harvestAmountMultiplier', value)} /></div></div>
-        <div className="settings-editor-group"><h3><span>2</span>Game.ini</h3><div className="form-grid"><FormField id="asaEggHatchSpeedMultiplier" label="孵化速度" type="number" value={request.eggHatchSpeedMultiplier} error={errors.eggHatchSpeedMultiplier} onChange={(value) => set('eggHatchSpeedMultiplier', value)} /><FormField id="asaBabyMatureSpeedMultiplier" label="赤ちゃんの成熟速度" type="number" value={request.babyMatureSpeedMultiplier} error={errors.babyMatureSpeedMultiplier} onChange={(value) => set('babyMatureSpeedMultiplier', value)} /></div></div>
+        <div className="settings-editor-group"><h3><span>2</span>Game.ini</h3><div className="form-grid"><FormField id="asaEggHatchSpeedMultiplier" label="孵化速度" type="number" value={request.eggHatchSpeedMultiplier} error={errors.eggHatchSpeedMultiplier} onChange={(value) => set('eggHatchSpeedMultiplier', value)} /><FormField id="asaBabyMatureSpeedMultiplier" label="赤ちゃんの成熟速度" type="number" value={request.babyMatureSpeedMultiplier} error={errors.babyMatureSpeedMultiplier} onChange={(value) => set('babyMatureSpeedMultiplier', value)} /></div><label className="automation-toggle" htmlFor="asaUseSingleplayerSettings"><input id="asaUseSingleplayerSettings" type="checkbox" checked={request.useSingleplayerSettings} onChange={(event) => set('useSingleplayerSettings', event.target.checked)} />少人数・シングル向け補正を有効にする</label><p className="notice">経験値、テイム、育成速度などにARKのシングルプレイヤー補正が追加されます。</p></div>
         <p className="notice">各倍率の標準値は1です。0.1から100の範囲で指定できます。</p>
       </section>
 

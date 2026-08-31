@@ -91,6 +91,10 @@ export function PalworldConstructionPage({ demoEnabled }: { demoEnabled: boolean
     return () => window.removeEventListener('beforeunload', warnBeforeLeaving)
   }, [isConstructing])
 
+  useEffect(() => {
+    if (plan) window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
+  }, [plan])
+
   const updateField = (field: keyof NewServerRequest, value: string | number | boolean) => {
     setForm((current) => ({ ...current, [field]: value }))
     setErrors((current) => ({ ...current, [field]: undefined }))

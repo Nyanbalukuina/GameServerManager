@@ -28,4 +28,5 @@ data class ConstructAsaRequest(
     val pveEnabled: Boolean = true,
     @field:Min(0) @field:Max(100) val eggHatchSpeedMultiplier: Double = 1.0,
     @field:Min(0) @field:Max(100) val babyMatureSpeedMultiplier: Double = 1.0,
+    val useSingleplayerSettings: Boolean = false,
 )

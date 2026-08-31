@@ -7,4 +7,5 @@ export type AsaGameplaySettings = {
   harvestAmountMultiplier: number
   eggHatchSpeedMultiplier: number
   babyMatureSpeedMultiplier: number
+  useSingleplayerSettings: boolean
 }

@@ -204,6 +204,10 @@ textarea {
   flex-wrap: wrap;
 }
 
+.settings-save-panel button {
+  margin-top: 0;
+}
+
 .settings-save-panel .notice,
 .settings-save-panel .success-message {
   margin: 0;
@@ -228,6 +232,18 @@ textarea {
 
 .settings-preview-grid.three-column {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.settings-preview-stack {
+  display: grid;
+  gap: 16px;
+}
+
+.settings-preview-stack > section {
+  padding: 18px;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  background: rgb(17 24 39 / 45%);
 }
 
 .setting-source {

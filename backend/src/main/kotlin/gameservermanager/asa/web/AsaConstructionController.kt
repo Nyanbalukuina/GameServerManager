@@ -36,6 +36,7 @@ class AsaConstructionController(
                 request.pveEnabled, request.xpMultiplier,
                 request.tamingSpeedMultiplier, request.harvestAmountMultiplier,
                 request.eggHatchSpeedMultiplier, request.babyMatureSpeedMultiplier,
+                request.useSingleplayerSettings,
             ),
         )
     }

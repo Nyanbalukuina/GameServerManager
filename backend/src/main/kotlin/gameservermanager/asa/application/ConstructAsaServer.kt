@@ -62,6 +62,7 @@ class ConstructAsaServer(
                     command.pveEnabled, command.xpMultiplier,
                     command.tamingSpeedMultiplier, command.harvestAmountMultiplier,
                     command.eggHatchSpeedMultiplier, command.babyMatureSpeedMultiplier,
+                    command.useSingleplayerSettings,
                 ),
             )
             steps += completed("configuration", "ASA設定の保存", "GameUserSettings.iniを保存しました")
@@ -141,6 +142,7 @@ class ConstructAsaServer(
         val harvestAmountMultiplier: Double = 1.0,
         val eggHatchSpeedMultiplier: Double = 1.0,
         val babyMatureSpeedMultiplier: Double = 1.0,
+        val useSingleplayerSettings: Boolean = false,
     )
 
     companion object {

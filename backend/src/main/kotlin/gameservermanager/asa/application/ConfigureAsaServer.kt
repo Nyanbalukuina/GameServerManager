@@ -64,6 +64,7 @@ class ConfigureAsaServer(
             "/Script/ShooterGame.ShooterGameMode" to linkedMapOf(
                 "EggHatchSpeedMultiplier" to command.eggHatchSpeedMultiplier.toString(),
                 "BabyMatureSpeedMultiplier" to command.babyMatureSpeedMultiplier.toString(),
+                "bUseSingleplayerSettings" to command.useSingleplayerSettings.toString().replaceFirstChar(Char::uppercase),
             ),
         )
         configurationWriter.write(
@@ -103,5 +104,6 @@ class ConfigureAsaServer(
         val harvestAmountMultiplier: Double = 1.0,
         val eggHatchSpeedMultiplier: Double = 1.0,
         val babyMatureSpeedMultiplier: Double = 1.0,
+        val useSingleplayerSettings: Boolean = false,
     )
 }

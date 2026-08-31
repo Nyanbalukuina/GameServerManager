@@ -21,6 +21,7 @@ export type AsaConstructionRequest = {
   harvestAmountMultiplier: string
   eggHatchSpeedMultiplier: string
   babyMatureSpeedMultiplier: string
+  useSingleplayerSettings: boolean
 }
 
 export type AsaConstructionErrors = Partial<Record<keyof AsaConstructionRequest | 'request', string>>

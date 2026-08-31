@@ -86,6 +86,8 @@ export function AsaManagementPage() {
         <label className="field" htmlFor="asaManagedEggHatch">孵化速度<input id="asaManagedEggHatch" type="number" min="0.1" max="100" step="0.1" value={settings.eggHatchSpeedMultiplier} onChange={(event) => setSettings({ ...settings, eggHatchSpeedMultiplier: Number(event.target.value) })} /></label>
         <label className="field" htmlFor="asaManagedBabyMature">赤ちゃんの成熟速度<input id="asaManagedBabyMature" type="number" min="0.1" max="100" step="0.1" value={settings.babyMatureSpeedMultiplier} onChange={(event) => setSettings({ ...settings, babyMatureSpeedMultiplier: Number(event.target.value) })} /></label>
       </div>
+      <label className="automation-toggle" htmlFor="asaManagedUseSingleplayerSettings"><input id="asaManagedUseSingleplayerSettings" type="checkbox" checked={settings.useSingleplayerSettings} onChange={(event) => setSettings({ ...settings, useSingleplayerSettings: event.target.checked })} />少人数・シングル向け補正を有効にする</label>
+      <p className="notice">有効にすると、表示中の倍率に加えてARKのシングルプレイヤー補正が適用されます。</p>
     </section>}
     {server && status && settings && <div className="card settings-save-panel">
       <button type="button" disabled={busy || running} onClick={() => void saveSettings()}>両方の設定を保存</button>

@@ -26,6 +26,7 @@ class ManageAsaGameplaySettings(
             harvestAmountMultiplier = readDouble(content, "HarvestAmountMultiplier", 1.0),
             eggHatchSpeedMultiplier = readGameDouble(gameContent, "EggHatchSpeedMultiplier", 1.0),
             babyMatureSpeedMultiplier = readGameDouble(gameContent, "BabyMatureSpeedMultiplier", 1.0),
+            useSingleplayerSettings = readGameBoolean(gameContent, "bUseSingleplayerSettings", false),
         )
     }
 
@@ -67,6 +68,7 @@ class ManageAsaGameplaySettings(
                     "/Script/ShooterGame.ShooterGameMode" to linkedMapOf(
                         "EggHatchSpeedMultiplier" to settings.eggHatchSpeedMultiplier.toString(),
                         "BabyMatureSpeedMultiplier" to settings.babyMatureSpeedMultiplier.toString(),
+                        "bUseSingleplayerSettings" to settings.useSingleplayerSettings.toString().replaceFirstChar(Char::uppercase),
                     ),
                 ),
             ),
@@ -108,6 +110,15 @@ class ManageAsaGameplaySettings(
     private fun readGameDouble(content: String, key: String, default: Double) =
         AsaGameUserSettingsIni.read(content, "/Script/ShooterGame.ShooterGameMode", key)?.toDoubleOrNull() ?: default
 
+    private fun readGameBoolean(content: String, key: String, default: Boolean): Boolean {
+        val value = AsaGameUserSettingsIni.read(content, "/Script/ShooterGame.ShooterGameMode", key) ?: return default
+        return when {
+            value.equals("true", ignoreCase = true) -> true
+            value.equals("false", ignoreCase = true) -> false
+            else -> default
+        }
+    }
+
     private fun validateMultiplier(value: Double, label: String) {
         require(value.isFinite() && value in 0.1..100.0) { "$label は0.1から100の範囲で指定してください" }
     }
@@ -121,5 +132,6 @@ class ManageAsaGameplaySettings(
         val harvestAmountMultiplier: Double,
         val eggHatchSpeedMultiplier: Double,
         val babyMatureSpeedMultiplier: Double,
+        val useSingleplayerSettings: Boolean,
     )
 }
