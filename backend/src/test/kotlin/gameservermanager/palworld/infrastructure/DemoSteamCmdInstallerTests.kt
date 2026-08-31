@@ -1,4 +1,4 @@
-package gameservermanager.shared.construction
+package gameservermanager.palworld.infrastructure
 
 import gameservermanager.shared.construction.SteamCmdInstallCommand
 import org.assertj.core.api.Assertions.assertThat

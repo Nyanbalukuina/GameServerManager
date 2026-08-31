@@ -1,7 +1,7 @@
-package gameservermanager.shared.construction
+package gameservermanager.palworld.infrastructure
 
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import gameservermanager.shared.construction.DemoServerConfigurationCommand
+import gameservermanager.palworld.application.DemoServerConfigurationCommand
 import gameservermanager.shared.server.GamePortAccess
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

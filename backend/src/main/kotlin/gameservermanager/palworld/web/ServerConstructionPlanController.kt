@@ -1,8 +1,8 @@
-package gameservermanager.shared.construction
+package gameservermanager.palworld.web
 
-import gameservermanager.shared.construction.CreateServerConstructionPlan
+import gameservermanager.palworld.application.CreateServerConstructionPlan
+import gameservermanager.palworld.domain.ServerConstructionPlan
 import gameservermanager.shared.construction.CreateGamePortAccess
-import gameservermanager.shared.construction.ServerConstructionPlan
 import gameservermanager.shared.error.InvalidConstructionPlanException
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.PostMapping

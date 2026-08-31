@@ -1,8 +1,8 @@
-package gameservermanager.shared.construction
+package gameservermanager.palworld.infrastructure
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import gameservermanager.shared.construction.DemoServerConfigurationCommand
-import gameservermanager.shared.construction.DemoServerConfigurator
+import gameservermanager.palworld.application.DemoServerConfigurationCommand
+import gameservermanager.palworld.application.DemoServerConfigurator
 import gameservermanager.palworld.application.PalworldSettingsIni
 import org.springframework.stereotype.Component
 import java.nio.charset.StandardCharsets

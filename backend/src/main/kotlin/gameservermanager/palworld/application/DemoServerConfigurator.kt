@@ -1,4 +1,4 @@
-package gameservermanager.shared.construction
+package gameservermanager.palworld.application
 
 import gameservermanager.shared.server.GamePortAccess
 

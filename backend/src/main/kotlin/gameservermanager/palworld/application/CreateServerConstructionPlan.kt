@@ -1,6 +1,7 @@
-package gameservermanager.shared.construction
+package gameservermanager.palworld.application
 
-import gameservermanager.shared.construction.ServerConstructionPlan
+import gameservermanager.palworld.domain.ServerConstructionPlan
+import gameservermanager.shared.construction.CreateGamePortAccess
 import org.springframework.stereotype.Service
 
 @Service

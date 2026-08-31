@@ -1,9 +1,10 @@
-package gameservermanager.shared.server
+package gameservermanager.palworld.application
 
 import gameservermanager.shared.server.GameServerRegistration
-import gameservermanager.palworld.application.PalworldSettingsIni
-import gameservermanager.shared.server.DemoPalworldSettingsResponse
-import gameservermanager.shared.server.UpdateDemoPalworldSettingsRequest
+import gameservermanager.shared.server.GameServerProcessManager
+import gameservermanager.shared.server.GameServerRegistrationStore
+import gameservermanager.palworld.web.DemoPalworldSettingsResponse
+import gameservermanager.palworld.web.UpdateDemoPalworldSettingsRequest
 import org.springframework.stereotype.Service
 import org.springframework.beans.factory.annotation.Autowired
 import java.nio.file.Files

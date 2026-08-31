@@ -1,7 +1,7 @@
-package gameservermanager.shared.construction
+package gameservermanager.palworld.web
 
+import gameservermanager.palworld.application.RunDemoServerConstruction
 import gameservermanager.shared.construction.CreateGamePortAccess
-import gameservermanager.shared.construction.RunDemoServerConstruction
 import gameservermanager.shared.construction.DemoConstructionReport
 import jakarta.validation.Valid
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

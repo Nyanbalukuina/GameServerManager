@@ -1,4 +1,4 @@
-package gameservermanager.shared.server
+package gameservermanager.palworld.web
 
 import jakarta.validation.constraints.Pattern
 

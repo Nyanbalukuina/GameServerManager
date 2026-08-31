@@ -1,4 +1,4 @@
-package gameservermanager.shared.construction
+package gameservermanager.palworld.web
 
 import jakarta.validation.constraints.Max
 import jakarta.validation.constraints.Min

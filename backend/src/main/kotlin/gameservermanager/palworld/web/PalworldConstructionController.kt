@@ -5,7 +5,6 @@ import gameservermanager.shared.construction.CreateGamePortAccess
 import gameservermanager.shared.construction.ConstructionProgressSnapshot
 import gameservermanager.shared.construction.ConstructionProgressTracker
 import gameservermanager.shared.construction.ServerConstructionReport
-import gameservermanager.shared.construction.NewServerRequest
 import jakarta.validation.Valid
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.GetMapping

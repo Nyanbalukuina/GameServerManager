@@ -1,7 +1,9 @@
-package gameservermanager.shared.server
+package gameservermanager.palworld.application
 
 import gameservermanager.shared.server.GameServerRegistration
-import gameservermanager.shared.server.UpdateDemoPalworldSettingsRequest
+import gameservermanager.palworld.web.UpdateDemoPalworldSettingsRequest
+import gameservermanager.shared.server.GameServerProcessManager
+import gameservermanager.shared.server.GameServerRegistrationStore
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test

@@ -1,4 +1,6 @@
-package gameservermanager.shared.construction
+package gameservermanager.palworld.application
+
+import gameservermanager.shared.construction.CreateGamePortAccess
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test

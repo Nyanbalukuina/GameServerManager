@@ -1,4 +1,4 @@
-package gameservermanager.shared.server
+package gameservermanager.palworld.web
 
 data class DemoPalworldSettingsResponse(
     val serverName: String,

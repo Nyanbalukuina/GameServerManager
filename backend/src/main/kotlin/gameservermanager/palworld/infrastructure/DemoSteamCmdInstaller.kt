@@ -1,8 +1,8 @@
-package gameservermanager.shared.construction
+package gameservermanager.palworld.infrastructure
 
+import gameservermanager.palworld.application.SteamCmdInstaller
+import gameservermanager.palworld.application.SteamCmdInstallResult
 import gameservermanager.shared.construction.SteamCmdInstallCommand
-import gameservermanager.shared.construction.SteamCmdInstallResult
-import gameservermanager.shared.construction.SteamCmdInstaller
 import org.springframework.stereotype.Component
 import java.nio.file.Files
 import java.nio.file.Path

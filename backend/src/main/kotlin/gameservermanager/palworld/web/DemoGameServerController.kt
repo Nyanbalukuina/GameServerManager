@@ -1,6 +1,6 @@
-package gameservermanager.shared.server
+package gameservermanager.palworld.web
 
-import gameservermanager.shared.server.ManageDemoGameServer
+import gameservermanager.palworld.application.ManageDemoGameServer
 import gameservermanager.shared.server.GameServerRegistration
 import jakarta.validation.Valid
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty

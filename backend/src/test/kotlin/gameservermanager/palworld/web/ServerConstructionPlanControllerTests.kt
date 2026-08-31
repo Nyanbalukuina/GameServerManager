@@ -1,6 +1,6 @@
-package gameservermanager.shared.construction
+package gameservermanager.palworld.web
 
-import gameservermanager.shared.construction.CreateServerConstructionPlan
+import gameservermanager.palworld.application.CreateServerConstructionPlan
 import gameservermanager.shared.construction.CreateGamePortAccess
 import gameservermanager.shared.error.ApiExceptionHandler
 import org.junit.jupiter.api.Test

@@ -1,9 +1,5 @@
 package gameservermanager.shared.construction
 
-interface SteamCmdInstaller {
-    fun install(command: SteamCmdInstallCommand): SteamCmdInstallResult
-}
-
 data class SteamCmdInstallCommand(
     val steamCmdPath: String,
     val installPath: String,
@@ -22,9 +18,3 @@ data class SteamCmdInstallCommand(
         )
     }
 }
-
-data class SteamCmdInstallResult(
-    val workspacePath: String,
-    val steamCmdExecutablePath: String,
-    val gameExecutablePath: String,
-)
