@@ -21,7 +21,7 @@ import type {
 import '../../styles/serverConstruction.css'
 
 const initialForm: NewServerRequest = {
-  serverName: '',
+  serverName: 'GSM Palworld Server',
   installPath: '',
   steamCmdPath: '',
   gamePort: '8211',

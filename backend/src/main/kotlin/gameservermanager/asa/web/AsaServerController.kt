@@ -5,8 +5,14 @@ import gameservermanager.asa.application.RestartAsaServer
 import gameservermanager.asa.application.StartAsaServer
 import gameservermanager.asa.application.StopAsaServer
 import gameservermanager.asa.application.DeleteAsaServer
+import gameservermanager.asa.application.CheckAsaServerVersion
+import gameservermanager.asa.application.UpdateAsaServer
+import gameservermanager.asa.application.GetInstalledAsaServerVersion
 import gameservermanager.shared.server.GameServerRegistrationStore
 import gameservermanager.shared.configuration.FeatureProperties
+import gameservermanager.shared.configuration.StorageProperties
+import gameservermanager.asa.domain.AsaServerVersion
+import gameservermanager.shared.steamcmd.InstalledSteamServerVersion
 import gameservermanager.asa.domain.AsaServerStatus
 import gameservermanager.asa.domain.AsaServerState
 import gameservermanager.shared.server.GameServerRegistration
@@ -20,6 +26,7 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.http.HttpStatus
+import java.nio.file.Path
 
 // 登録済みASAサーバーの状態確認とプロセス操作APIを公開する。
 @RestController
@@ -30,8 +37,12 @@ class AsaServerController(
     private val stopServer: StopAsaServer,
     private val restartServer: RestartAsaServer,
     private val deleteServer: DeleteAsaServer,
+    private val checkVersion: CheckAsaServerVersion,
+    private val updateServer: UpdateAsaServer,
+    private val getInstalledVersion: GetInstalledAsaServerVersion,
     private val registrationStore: GameServerRegistrationStore,
     private val features: FeatureProperties,
+    private val storageProperties: StorageProperties,
 ) {
     @GetMapping
     fun get(): GameServerRegistration = registration()
@@ -77,6 +88,26 @@ class AsaServerController(
         return status
     }
 
+    @PostMapping("/version/check")
+    fun checkVersion(): AsaServerVersion {
+        val server = realRegistration()
+        return checkVersion.execute(CheckAsaServerVersion.Command(steamCmdPath(server), server.installPath))
+    }
+
+    @GetMapping("/version/current")
+    fun currentVersion(): InstalledSteamServerVersion {
+        val server = realRegistration()
+        return getInstalledVersion.execute(
+            GetInstalledAsaServerVersion.Command(steamCmdPath(server), server.installPath),
+        )
+    }
+
+    @PostMapping("/update")
+    fun update(): AsaServerVersion {
+        val server = realRegistration()
+        return updateServer.execute(UpdateAsaServer.Command(steamCmdPath(server), server.installPath))
+    }
+
     @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
     fun delete(@RequestParam confirmation: String) {
@@ -91,6 +122,14 @@ class AsaServerController(
     private fun registration() = requireNotNull(registrationStore.findByGame("ASA")) {
         "ASAサーバーは登録されていません"
     }.also { require(features.demoEnabled || it.mode != "DEMO") { "ASAサーバーは登録されていません" } }
+
+    private fun realRegistration() = registration().also {
+        require(it.mode == "REAL") { "デモASAサーバーではバージョン確認と更新を実行できません" }
+    }
+
+    private fun steamCmdPath(server: GameServerRegistration): String {
+        return server.steamCmdPath ?: Path.of(storageProperties.root).resolve("tools/steamcmd").toString()
+    }
 
     private fun updateDemo(server: GameServerRegistration, state: String, message: String): AsaServerStatus {
         val updated = server.copy(state = state)

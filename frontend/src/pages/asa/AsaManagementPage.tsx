@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
-import { deleteAsaServer, getAsaGameplaySettings, getAsaServer, getAsaServerStatus, restartAsaServer, startAsaServer, stopAsaServer, updateAsaGameplaySettings } from '../../api/asaServer'
+import { checkAsaServerVersion, deleteAsaServer, getAsaGameplaySettings, getAsaServer, getAsaServerStatus, getInstalledAsaServerVersion, restartAsaServer, startAsaServer, stopAsaServer, updateAsaGameplaySettings, updateAsaServer } from '../../api/asaServer'
 import { AppLink } from '../../components/common/AppLink'
 import type { AsaServerStatus } from '../../types/asaServer'
 import type { GameServerRegistration } from '../../types/gameServer'
 import type { AsaGameplaySettings } from '../../types/asaGameplaySettings'
+import type { AsaServerVersion } from '../../types/asaServerVersion'
+import type { InstalledSteamServerVersion } from '../../types/installedSteamServerVersion'
 import '../../styles/serverConstruction.css'
 
 export function AsaManagementPage() {
@@ -15,10 +17,27 @@ export function AsaManagementPage() {
   const [error, setError] = useState<string | null>(null)
   const [settings, setSettings] = useState<AsaGameplaySettings | null>(null)
   const [settingsMessage, setSettingsMessage] = useState<string | null>(null)
+  const [version, setVersion] = useState<AsaServerVersion | null>(null)
+  const [versionAction, setVersionAction] = useState<'CHECK' | 'UPDATE' | null>(null)
+  const [installedVersion, setInstalledVersion] = useState<InstalledSteamServerVersion | null>(null)
+  const [versionError, setVersionError] = useState<string | null>(null)
+  const [updateCheckError, setUpdateCheckError] = useState<string | null>(null)
 
   useEffect(() => {
     Promise.all([getAsaServer(), getAsaServerStatus(), getAsaGameplaySettings()])
-      .then(([registration, current, gameplaySettings]) => { setServer(registration); setStatus(current); setSettings(gameplaySettings) })
+      .then(([registration, current, gameplaySettings]) => {
+        setServer(registration); setStatus(current); setSettings(gameplaySettings)
+        if (registration.mode === 'REAL') {
+          void getInstalledAsaServerVersion()
+            .then(setInstalledVersion)
+            .catch((reason: unknown) => setVersionError(reason instanceof Error ? reason.message : '現在のBuild IDを取得できませんでした'))
+          void checkAsaServerVersion()
+            .then((checked) => {
+              setVersion(checked); setInstalledVersion({ appId: 2430930, buildId: checked.currentBuildId })
+            })
+            .catch(() => setUpdateCheckError('最新バージョンの配布状況を確認できませんでした'))
+        }
+      })
       .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : 'ARK: Survival Ascendedサーバーを取得できませんでした'))
   }, [])
 
@@ -33,6 +52,24 @@ export function AsaManagementPage() {
   }
 
   const running = status?.state === 'RUNNING'
+  const checkVersion = async () => {
+    setBusy(true); setVersionAction('CHECK'); setError(null); setUpdateCheckError(null)
+    try {
+      const checked = await checkAsaServerVersion()
+      setVersion(checked); setInstalledVersion({ appId: 2430930, buildId: checked.currentBuildId }); setVersionError(null); setUpdateCheckError(null)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : '最新サーバーバージョンを取得できませんでした')
+    } finally { setBusy(false); setVersionAction(null) }
+  }
+  const applyUpdate = async () => {
+    setBusy(true); setVersionAction('UPDATE'); setError(null)
+    try {
+      const updated = await updateAsaServer()
+      setVersion(updated); setInstalledVersion({ appId: 2430930, buildId: updated.currentBuildId }); setVersionError(null)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : '最新サーバーバージョンを適用できませんでした')
+    } finally { setBusy(false); setVersionAction(null) }
+  }
   const saveSettings = async () => {
     if (!settings) return
     setBusy(true); setError(null); setSettingsMessage(null)
@@ -65,6 +102,20 @@ export function AsaManagementPage() {
       {server.mode === 'REAL' && <label className="field">管理者パスワード（停止・再起動時に使用）<input value={adminPassword} onChange={(event) => setAdminPassword(event.target.value)} /></label>}
       <div className="button-row management-actions"><button type="button" disabled={busy || running} onClick={() => void operate('START')}>起動</button><button type="button" disabled={busy || !running || (server.mode === 'REAL' && adminPassword.length < 8)} onClick={() => void operate('STOP')}>保存して停止</button><button type="button" disabled={busy || !running || (server.mode === 'REAL' && adminPassword.length < 8)} onClick={() => void operate('RESTART')}>保存して再起動</button></div>
       <p className="notice">{server.mode === 'DEMO' ? 'デモ操作のため、実際のARK: Survival AscendedプロセスやRCONは操作しません。' : '停止と再起動では、RCONでSaveWorldを実行してからARK: Survival Ascendedを終了します。'}</p>
+    </section>}
+    {server && status && <section className="card form-section">
+      <div className="section-heading"><div><p className="section-number">UPDATE</p><h2>サーバーバージョン</h2></div><p>Steamで公開されているASAサーバーのBuild IDと比較します。</p></div>
+      {version?.updateAvailable && <p className="notice" role="status">最新バージョンが配布されています。</p>}
+      <dl><dt>Steam App ID</dt><dd>2430930</dd><dt>現在のBuild ID</dt><dd>{server.mode === 'DEMO' ? 'デモのため取得不可' : installedVersion?.buildId ?? (versionError ? '取得失敗' : '読み込み中...')}</dd><dt>最新のBuild ID</dt><dd>{server.mode === 'DEMO' ? 'デモのため取得不可' : version?.latestBuildId ?? '確認中...'}</dd>{version && <><dt>確認結果</dt><dd>{version.message}</dd></>}</dl>
+      {versionError && <p className="error" role="alert">{versionError}</p>}
+      {updateCheckError && <p className="notice">{updateCheckError}必要に応じて再確認してください。</p>}
+      <div className="button-row management-actions">
+        <button type="button" disabled={busy || server.mode === 'DEMO'} onClick={() => void checkVersion()}>{versionAction === 'CHECK' ? '更新状況を確認中...' : '更新状況を再確認'}</button>
+        <button type="button" disabled={busy || server.mode === 'DEMO' || running || !version?.updateAvailable} onClick={() => void applyUpdate()}>{versionAction === 'UPDATE' ? '最新バージョンを適用中...' : '最新バージョンを適用'}</button>
+      </div>
+      {server.mode === 'DEMO' && <p className="notice">デモサーバーでは画面のみ確認できます。Build IDの取得と更新は実行しません。</p>}
+      {server.mode === 'REAL' && running && <p className="notice">更新を適用するにはサーバーを停止してください。</p>}
+      {server.mode === 'REAL' && !version && !updateCheckError && <p className="notice">最新バージョンの配布状況を確認しています。</p>}
     </section>}
     {server && status && settings && <section className="card form-section">
       <div className="section-heading"><div><p className="section-number">SETTINGS 00</p><h2>起動設定</h2></div><p>INIではなくARKサーバーの起動時に適用されます。</p></div>

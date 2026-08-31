@@ -96,6 +96,7 @@ class ConstructAsaServer(
                         GAME, SERVER_ID, "REAL", "RUNNING", command.serverName, command.installPath, "",
                         command.gamePort, command.rconPort, Clock.systemUTC().instant(), access,
                         command.gamePort + 1, command.queryPort, command.map, command.maxPlayers,
+                        command.steamCmdPath,
                     ),
                 )
                 steps += completed("registration", "管理対象への登録", "ASAサーバーを登録しました")

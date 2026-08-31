@@ -132,6 +132,7 @@ class ConstructPalworldServer(
                     rconPort = command.rconPort,
                     createdAt = Clock.systemUTC().instant(),
                     gamePortAccess = gamePortAccess,
+                    steamCmdPath = command.steamCmdPath,
                 ),
             )
                 steps += completed("registration", "管理対象への登録", "Palworldサーバーを登録しました")

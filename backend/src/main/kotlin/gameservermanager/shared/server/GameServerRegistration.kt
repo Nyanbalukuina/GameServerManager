@@ -18,4 +18,5 @@ data class GameServerRegistration(
     val queryPort: Int? = null,
     val map: String? = null,
     val maxPlayers: Int? = null,
+    val steamCmdPath: String? = null,
 )

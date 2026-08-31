@@ -1,6 +1,8 @@
 import type { GameServerRegistration } from '../types/gameServer'
 import type { AsaServerStatus } from '../types/asaServer'
 import type { AsaGameplaySettings } from '../types/asaGameplaySettings'
+import type { AsaServerVersion } from '../types/asaServerVersion'
+import type { InstalledSteamServerVersion } from '../types/installedSteamServerVersion'
 import { apiFetch } from './http'
 
 export async function getAsaServer(): Promise<GameServerRegistration> {
@@ -21,6 +23,18 @@ export async function stopAsaServer(adminPassword: string): Promise<AsaServerSta
 
 export async function restartAsaServer(adminPassword: string): Promise<AsaServerStatus> {
   return operate('/api/asa/server/restart', adminPassword)
+}
+
+export function checkAsaServerVersion(): Promise<AsaServerVersion> {
+  return request<AsaServerVersion>('/api/asa/server/version/check', { method: 'POST' })
+}
+
+export function getInstalledAsaServerVersion(): Promise<InstalledSteamServerVersion> {
+  return request<InstalledSteamServerVersion>('/api/asa/server/version/current')
+}
+
+export function updateAsaServer(): Promise<AsaServerVersion> {
+  return request<AsaServerVersion>('/api/asa/server/update', { method: 'POST' })
 }
 
 export async function deleteAsaServer(confirmation: string): Promise<void> {

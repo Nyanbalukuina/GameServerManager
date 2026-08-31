@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
-import { deleteDemoPalworldServer, getDemoPalworldSettings, getPalworldServer, operateDemoPalworldServer, updateDemoPalworldSettings } from '../../api/gameServers'
+import { checkPalworldServerVersion, deleteDemoPalworldServer, getDemoPalworldSettings, getInstalledPalworldServerVersion, getPalworldServer, getPalworldServerStatus, operateDemoPalworldServer, updateDemoPalworldSettings, updatePalworldServerVersion } from '../../api/gameServers'
 import { AppLink } from '../../components/common/AppLink'
 import type { GameServerRegistration, PalworldSettings, UpdatePalworldSettings } from '../../types/gameServer'
+import type { PalworldServerVersion } from '../../types/palworldServerVersion'
+import type { PalworldServerStatus } from '../../types/palworldServer'
+import type { InstalledSteamServerVersion } from '../../types/installedSteamServerVersion'
 import '../../styles/serverConstruction.css'
 
 export function PalworldManagementPage() {
@@ -13,10 +16,30 @@ export function PalworldManagementPage() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [notice, setNotice] = useState<string | null>(null)
+  const [version, setVersion] = useState<PalworldServerVersion | null>(null)
+  const [versionAction, setVersionAction] = useState<'CHECK' | 'UPDATE' | null>(null)
+  const [serverStatus, setServerStatus] = useState<PalworldServerStatus | null>(null)
+  const [installedVersion, setInstalledVersion] = useState<InstalledSteamServerVersion | null>(null)
+  const [versionError, setVersionError] = useState<string | null>(null)
+  const [updateCheckError, setUpdateCheckError] = useState<string | null>(null)
 
   useEffect(() => {
-    Promise.all([getPalworldServer(), getDemoPalworldSettings()])
-      .then(([loadedServer, loadedSettings]) => { setServer(loadedServer); setSettings(loadedSettings) })
+    getPalworldServer()
+      .then(async (loadedServer) => {
+        setServer(loadedServer)
+        if (loadedServer.mode === 'DEMO') setSettings(await getDemoPalworldSettings())
+        else {
+          setServerStatus(await getPalworldServerStatus())
+          void getInstalledPalworldServerVersion()
+            .then(setInstalledVersion)
+            .catch((reason: unknown) => setVersionError(reason instanceof Error ? reason.message : '現在のBuild IDを取得できませんでした'))
+          void checkPalworldServerVersion()
+            .then((checked) => {
+              setVersion(checked); setInstalledVersion({ appId: 2394010, buildId: checked.currentBuildId })
+            })
+            .catch(() => setUpdateCheckError('最新バージョンの配布状況を確認できませんでした'))
+        }
+      })
       .catch((reason: unknown) => setError(reason instanceof Error ? reason.message : 'Palworldサーバーを取得できませんでした'))
   }, [])
 
@@ -57,6 +80,28 @@ export function PalworldManagementPage() {
     }
   }
 
+  const checkVersion = async () => {
+    setBusy(true); setVersionAction('CHECK'); setError(null); setNotice(null); setUpdateCheckError(null)
+    try {
+      const checked = await checkPalworldServerVersion()
+      setVersion(checked); setInstalledVersion({ appId: 2394010, buildId: checked.currentBuildId }); setVersionError(null); setUpdateCheckError(null)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : '最新サーバーバージョンを取得できませんでした')
+    } finally { setBusy(false); setVersionAction(null) }
+  }
+
+  const applyUpdate = async () => {
+    setBusy(true); setVersionAction('UPDATE'); setError(null); setNotice(null)
+    try {
+      const updated = await updatePalworldServerVersion()
+      setVersion(updated); setInstalledVersion({ appId: 2394010, buildId: updated.currentBuildId }); setVersionError(null); setNotice(updated.message)
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : '最新サーバーバージョンを適用できませんでした')
+    } finally { setBusy(false); setVersionAction(null) }
+  }
+
+  const running = server?.mode === 'REAL' ? serverStatus?.state === 'RUNNING' : server?.state === 'RUNNING'
+
   return <main className="compact-page">
     <AppLink className="back-link" href="/servers/new">ゲーム選択へ戻る</AppLink>
     <header className="page-header"><p className="eyebrow">Palworld</p><h1>サーバー管理</h1><p>現在状態を確認し、サーバー操作とワールド設定を管理します。</p></header>
@@ -65,10 +110,24 @@ export function PalworldManagementPage() {
     {!server && !error && <p>読み込み中...</p>}
     {server && <>
       <section className="card server-overview">
-        <div className="server-overview-heading"><div><p className="section-number">SERVER</p><h2>{server.serverName}</h2></div><span className={`status-badge ${server.state === 'RUNNING' ? 'running' : 'stopped'}`}>{server.state === 'RUNNING' ? '起動中' : '停止中'}</span></div>
-        <dl><dt>種類</dt><dd>{server.mode === 'DEMO' ? 'デモ' : '実サーバー'}</dd><dt>状態</dt><dd>{server.state === 'RUNNING' ? '起動中' : '停止中'}</dd><dt>ゲームポート</dt><dd>{server.gamePort}</dd><dt>RCONポート</dt><dd>{server.rconPort}</dd><dt>ゲームポートの接続元</dt><dd>{formatGamePortAccess(server)}</dd><dt>デモデータ</dt><dd>{server.workspacePath}</dd></dl>
+        <div className="server-overview-heading"><div><p className="section-number">SERVER</p><h2>{server.serverName}</h2></div><span className={`status-badge ${running ? 'running' : 'stopped'}`}>{running ? '起動中' : '停止中'}</span></div>
+        <dl><dt>種類</dt><dd>{server.mode === 'DEMO' ? 'デモ' : '実サーバー'}</dd><dt>状態</dt><dd>{running ? '起動中' : '停止中'}</dd><dt>ゲームポート</dt><dd>{server.gamePort}</dd><dt>RCONポート</dt><dd>{server.rconPort}</dd><dt>ゲームポートの接続元</dt><dd>{formatGamePortAccess(server)}</dd><dt>{server.mode === 'DEMO' ? 'デモデータ' : 'インストール先'}</dt><dd>{server.mode === 'DEMO' ? server.workspacePath : server.installPath}</dd></dl>
         <div className="button-row management-actions"><button type="button" disabled={busy || server.state === 'RUNNING'} onClick={() => void operate('START')}>起動</button><button type="button" disabled={busy || server.state === 'STOPPED'} onClick={() => void operate('STOP')}>保存して停止</button><button type="button" disabled={busy || server.state === 'STOPPED'} onClick={() => void operate('RESTART')}>保存して再起動</button></div>
         <p className="notice">デモ操作のため、実際のゲームプロセスは操作しません。</p>
+      </section>
+      <section className="card form-section">
+        <div className="section-heading"><div><p className="section-number">UPDATE</p><h2>サーバーバージョン</h2></div><p>Steamで公開されているPalworldサーバーのBuild IDと比較します。</p></div>
+        {version?.updateAvailable && <p className="notice" role="status">最新バージョンが配布されています。</p>}
+        <dl><dt>Steam App ID</dt><dd>2394010</dd><dt>現在のBuild ID</dt><dd>{server.mode === 'DEMO' ? 'デモのため取得不可' : installedVersion?.buildId ?? (versionError ? '取得失敗' : '読み込み中...')}</dd><dt>最新のBuild ID</dt><dd>{server.mode === 'DEMO' ? 'デモのため取得不可' : version?.latestBuildId ?? '確認中...'}</dd>{version && <><dt>確認結果</dt><dd>{version.message}</dd></>}</dl>
+        {versionError && <p className="error" role="alert">{versionError}</p>}
+        {updateCheckError && <p className="notice">{updateCheckError}必要に応じて再確認してください。</p>}
+        <div className="button-row management-actions">
+          <button type="button" disabled={busy || server.mode === 'DEMO'} onClick={() => void checkVersion()}>{versionAction === 'CHECK' ? '更新状況を確認中...' : '更新状況を再確認'}</button>
+          <button type="button" disabled={busy || server.mode === 'DEMO' || running || !version?.updateAvailable} onClick={() => void applyUpdate()}>{versionAction === 'UPDATE' ? '最新バージョンを適用中...' : '最新バージョンを適用'}</button>
+        </div>
+        {server.mode === 'DEMO' && <p className="notice">デモサーバーでは画面のみ確認できます。Build IDの取得と更新は実行しません。</p>}
+        {server.mode === 'REAL' && running && <p className="notice">更新を適用するにはサーバーを停止してください。</p>}
+        {server.mode === 'REAL' && !version && !updateCheckError && <p className="notice">最新バージョンの配布状況を確認しています。</p>}
       </section>
       {settings && <section className="card"><h2>ワールド設定</h2>{editing && draft ? <SettingsForm draft={draft} busy={busy} onChange={setDraft} onSave={() => void save()} onCancel={() => setEditing(false)} /> : <><SettingsPreview settings={settings} /><button type="button" disabled={busy || server.state !== 'STOPPED'} onClick={beginEditing}>設定を編集</button>{server.state === 'RUNNING' && <p className="notice">設定を編集するにはサーバーを停止してください。</p>}</>}</section>}
       <section className="card danger-zone"><h2>デモサーバーを削除</h2><p>一時領域のデモデータとPalworldの登録を削除します。</p><label htmlFor="deleteConfirmation">確認のためPALWORLDと入力してください</label><input id="deleteConfirmation" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} /><button type="button" disabled={busy || confirmation !== 'PALWORLD'} onClick={() => void remove()}>デモサーバーを削除</button></section>
