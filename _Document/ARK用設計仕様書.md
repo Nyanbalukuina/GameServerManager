@@ -41,7 +41,7 @@ Spring Bootバックエンド
 Windows / SteamCMD / ArkAscendedServer.exe
 ```
 
-管理データの既定ルートは `C:\GameServerManager` とし、環境変数 `GAME_SERVER_MANAGER_ROOT` で変更できる。Webサーバーは既定で `127.0.0.1:8080` にバインドする。
+管理データの既定ルートは `%LOCALAPPDATA%\GameServerManager` とし、環境変数 `GAME_SERVER_MANAGER_ROOT` で変更できる。Webサーバーは既定で `127.0.0.1:8080` にバインドする。
 
 ## 4. サーバー識別情報
 

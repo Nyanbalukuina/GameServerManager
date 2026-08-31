@@ -14,6 +14,20 @@ export type ServerPreflightReport = {
 
 export type ConstructionStepStatus = 'COMPLETED' | 'ERROR'
 
+export type ConstructionProgressStepStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'ERROR'
+
+export type ConstructionProgressSnapshot = {
+  game: 'ASA' | 'PALWORLD'
+  status: 'RUNNING' | 'COMPLETED' | 'ERROR'
+  steps: Array<{
+    id: string
+    label: string
+    status: ConstructionProgressStepStatus
+    message: string
+  }>
+  updatedAt: string
+}
+
 export type ConstructionStep = {
   id: string
   label: string

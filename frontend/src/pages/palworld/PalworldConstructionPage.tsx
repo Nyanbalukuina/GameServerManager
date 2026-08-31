@@ -143,7 +143,6 @@ export function PalworldConstructionPage({ demoEnabled }: { demoEnabled: boolean
       setConstructionError(result.errors.request ?? 'Palworldサーバーを構築できませんでした')
     }
     setIsConstructing(false)
-    setConstructionKind(null)
   }
 
   const returnToForm = () => {

@@ -31,7 +31,7 @@ export function PalworldConstructionPlan({ plan, preflight, isConstructing, cons
   return <>
     <button className="back-link link-button" type="button" disabled={isConstructing} onClick={onReturnToForm}>入力画面へ戻る</button>
     <header className="page-header"><p className="eyebrow">Palworld</p><h1>構築内容の確認</h1><p>入力内容と事前検証結果を確認してからサーバー構築を開始します。</p></header>
-    {isConstructing && constructionKind && <ConstructionInProgress demo={constructionKind === 'DEMO'} />}
+    {(isConstructing || (constructionError !== null && constructionKind === 'REAL')) && constructionKind && <ConstructionInProgress demo={constructionKind === 'DEMO'} active={isConstructing} />}
 
     <section className="card">
       <div className="section-heading"><div><p className="section-number">01</p><h2>基本設定</h2></div><p>Palworld本体とSteamCMDの保存先です。</p></div>

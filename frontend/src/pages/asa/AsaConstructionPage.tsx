@@ -2,13 +2,12 @@ import { useEffect, useState } from 'react'
 import { constructAsaServer, constructDemoAsaServer, runAsaPreflight } from '../../api/asaConstruction'
 import { getStorageConfiguration } from '../../api/storageConfiguration'
 import { AppLink } from '../../components/common/AppLink'
-import { ConstructionInProgress } from '../../components/common/ConstructionInProgress'
-import { ConstructionProgress } from '../../components/common/ConstructionProgress'
 import { FormField } from '../../components/common/FormField'
 import { GamePortAccessFields } from '../../components/common/GamePortAccessFields'
 import { PreflightResults } from '../../components/common/PreflightResults'
 import type { AsaConstructionErrors, AsaConstructionRequest } from '../../types/asaConstruction'
-import type { DemoConstructionReport, ServerConstructionReport, ServerPreflightReport } from '../../types/serverOperations'
+import type { ServerPreflightReport } from '../../types/serverOperations'
+import type { ConstructionExecution, ConstructionExecutionResult } from '../../types/constructionExecution'
 import '../../styles/serverConstruction.css'
 
 const initialRequest: AsaConstructionRequest = {
@@ -34,14 +33,12 @@ const initialRequest: AsaConstructionRequest = {
   babyMatureSpeedMultiplier: '1',
 }
 
-export function AsaConstructionPage({ demoEnabled }: { demoEnabled: boolean }) {
+export function AsaConstructionPage({ demoEnabled, onStartConstruction }: { demoEnabled: boolean; onStartConstruction: (execution: ConstructionExecution) => void }) {
   const [request, setRequest] = useState(initialRequest)
   const [kind, setKind] = useState<'DEMO' | 'REAL'>(demoEnabled ? 'DEMO' : 'REAL')
   const [errors, setErrors] = useState<AsaConstructionErrors>({})
   const [preflight, setPreflight] = useState<ServerPreflightReport | null>(null)
-  const [report, setReport] = useState<DemoConstructionReport | ServerConstructionReport | null>(null)
   const [checking, setChecking] = useState(false)
-  const [constructing, setConstructing] = useState(false)
   const [reviewing, setReviewing] = useState(false)
 
   useEffect(() => {
@@ -56,24 +53,15 @@ export function AsaConstructionPage({ demoEnabled }: { demoEnabled: boolean }) {
       }))
   }, [])
 
-  useEffect(() => {
-    if (!constructing) return
-    const warn = (event: BeforeUnloadEvent) => event.preventDefault()
-    window.addEventListener('beforeunload', warn)
-    return () => window.removeEventListener('beforeunload', warn)
-  }, [constructing])
-
   const set = <K extends keyof AsaConstructionRequest>(key: K, value: AsaConstructionRequest[K]) => {
     setRequest((current) => ({ ...current, [key]: value }))
     setErrors((current) => ({ ...current, [key]: undefined }))
     setPreflight(null)
-    setReport(null)
   }
 
   const check = async () => {
     setChecking(true)
     setErrors({})
-    setReport(null)
     try {
       setPreflight(await runAsaPreflight(request))
       setReviewing(true)
@@ -84,35 +72,23 @@ export function AsaConstructionPage({ demoEnabled }: { demoEnabled: boolean }) {
     }
   }
 
-  const construct = async () => {
-    setConstructing(true)
+  const construct = () => {
     setErrors({})
-    try {
-      if (kind === 'DEMO') {
-        setReport(await constructDemoAsaServer(request))
-      } else {
-        const result = await constructAsaServer(request)
-        if (result.ok) setReport(result.report)
-        else setErrors(result.errors)
-      }
-    } catch (error) {
-      setErrors({
-        request: error instanceof Error
-          ? error.message
-          : 'ARK: Survival Ascendedサーバーを構築できませんでした',
-      })
-    } finally {
-      setConstructing(false)
-    }
+    const result: Promise<ConstructionExecutionResult> = kind === 'DEMO'
+      ? constructDemoAsaServer(request)
+          .then((report) => ({ ok: true as const, report }))
+          .catch((error: unknown) => ({ ok: false as const, message: error instanceof Error ? error.message : 'ARK: Survival Ascendedデモサーバーを構築できませんでした' }))
+      : constructAsaServer(request).then((response) => response.ok
+          ? { ok: true as const, report: response.report }
+          : { ok: false as const, message: response.errors.request ?? 'ARK: Survival Ascendedサーバーを構築できませんでした' })
+    onStartConstruction({ game: 'ASA', demo: kind === 'DEMO', result })
   }
 
   if (reviewing && preflight) {
     return (
       <main className="asa-construction-page compact-page">
-        <button className="back-link link-button" type="button" disabled={constructing} onClick={() => { setReviewing(false); setReport(null) }}>入力画面へ戻る</button>
+        <button className="back-link link-button" type="button" onClick={() => setReviewing(false)}>入力画面へ戻る</button>
         <header className="page-header"><p className="eyebrow">ARK: Survival Ascended</p><h1>構築内容の確認</h1><p>入力内容と事前検証結果を確認してからサーバー構築を開始します。</p></header>
-        {constructing && <ConstructionInProgress demo={kind === 'DEMO'} game="ASA" />}
-
         <section className="card">
           <div className="section-heading"><div><p className="section-number">01</p><h2>基本設定</h2></div><p>ARK本体とSteamCMDの保存先です。</p></div>
           <dl><dt>インストール先</dt><dd>{request.installPath}</dd><dt>SteamCMDの保存先</dt><dd>{request.steamCmdPath}</dd></dl>
@@ -137,13 +113,12 @@ export function AsaConstructionPage({ demoEnabled }: { demoEnabled: boolean }) {
 
         <section className="card action-card">
           <div className="section-heading"><div><p className="section-number">06</p><h2>サーバー構築</h2></div><p>{kind === 'DEMO' ? '実環境を変更せず、設定と操作の流れを確認します。' : 'ARKサーバーをインストールし、設定・Firewall・起動まで実行します。'}</p></div>
-          {demoEnabled && <label className="field" htmlFor="asaConstructionKind">構築の種類<select id="asaConstructionKind" value={kind} onChange={(event) => { setKind(event.target.value as 'DEMO' | 'REAL'); setReport(null) }}><option value="DEMO">デモ構築</option><option value="REAL">実サーバー構築</option></select></label>}
-          <button type="button" disabled={(kind === 'REAL' && !preflight.canProceed) || constructing || report !== null} onClick={() => void construct()}>{constructing ? '構築中...' : kind === 'DEMO' ? 'デモサーバーを構築' : 'ARKサーバーを構築して起動'}</button>
+          {demoEnabled && <label className="field" htmlFor="asaConstructionKind">構築の種類<select id="asaConstructionKind" value={kind} onChange={(event) => setKind(event.target.value as 'DEMO' | 'REAL')}><option value="DEMO">デモ構築</option><option value="REAL">実サーバー構築</option></select></label>}
+          <button type="button" disabled={kind === 'REAL' && !preflight.canProceed} onClick={construct}>{kind === 'DEMO' ? 'デモサーバーを構築' : 'ARKサーバーを構築して起動'}</button>
           {kind === 'REAL' && !preflight.canProceed && <p className="notice">事前検証のエラーを解消してから実構築を開始してください。</p>}
           {kind === 'DEMO' && !preflight.canProceed && <p className="notice">実構築には修正が必要ですが、デモ構築は実行できます。</p>}
           {errors.request && <p className="error request-error" role="alert">{errors.request}</p>}
         </section>
-        {report && <><ConstructionProgress report={report} game="ARK: Survival Ascended" /><AppLink className="management-link" href="/servers/asa">ARK管理画面を開く</AppLink></>}
       </main>
     )
   }

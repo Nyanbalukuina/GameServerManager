@@ -136,7 +136,6 @@ cd backend
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -File .\GameServerManager.WindowsSetup.ps1 `
   -Action Plan `
-  -StorageRoot C:\GameServerManager `
   -ManagementPort 8080
 ```
 
@@ -146,17 +145,18 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass `
 powershell.exe -NoProfile -ExecutionPolicy Bypass `
   -File .\GameServerManager.WindowsSetup.ps1 `
   -Action Install `
-  -StorageRoot C:\GameServerManager `
   -ManagementPort 8080
 ```
 
 セットアップでは、管理画面用Firewall規則、ゲーム用Firewall補助タスク、Windows起動時の自動起動タスクを登録します。状態確認は `-Action Status`、解除は `-Action Uninstall` を使用します。
 
+管理データの既定保存先は `%LOCALAPPDATA%\GameServerManager` です。別ドライブなどへ変更する場合は、セットアップ時に `-StorageRoot D:\GameServerManager` のように指定します。
+
 ## 実行設定
 
 | 環境変数 | 既定値 | 用途 |
 |---|---|---|
-| `GAME_SERVER_MANAGER_ROOT` | `C:\GameServerManager` | 管理データの保存先 |
+| `GAME_SERVER_MANAGER_ROOT` | `%LOCALAPPDATA%\GameServerManager` | 管理データの保存先 |
 | `GAME_SERVER_MANAGER_ADDRESS` | `127.0.0.1` | 管理画面の待受アドレス |
 | `GAME_SERVER_MANAGER_PORT` | `8080` | 管理画面のポート |
 | `GAME_SERVER_MANAGER_SECURE_COOKIE` | `false` | CookieのSecure属性 |

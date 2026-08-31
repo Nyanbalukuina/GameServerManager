@@ -18,4 +18,4 @@ game-server-manager:
   features:
     demo-enabled: ${GAME_SERVER_MANAGER_DEMO_ENABLED:true}
   storage:
-    root: "${GAME_SERVER_MANAGER_ROOT:C:\\GameServerManager}"
+    root: "${GAME_SERVER_MANAGER_ROOT:${LOCALAPPDATA:${user.home}/AppData/Local}/GameServerManager}"

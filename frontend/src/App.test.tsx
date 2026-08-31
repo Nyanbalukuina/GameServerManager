@@ -63,6 +63,33 @@ describe('App', () => {
     expect(screen.getByRole('button', { name: 'ARKサーバーを構築して起動' })).toBeInTheDocument()
   })
 
+  it('ARKの構築開始後は専用の進捗ページへ移動する', async () => {
+    window.history.pushState({}, '', '/servers/new/asa')
+    vi.stubGlobal('fetch', appFetch([
+      response({ canProceed: true, checks: [] }),
+      response({
+        completed: true,
+        mode: 'REAL',
+        installPath: 'C:\\GameServerManager\\servers\\asa\\main\\runtime',
+        steps: [{
+          id: 'registration',
+          label: '管理対象への登録',
+          status: 'COMPLETED',
+          message: 'ASAサーバーを登録しました',
+        }],
+      }),
+    ], false))
+    render(<App />)
+
+    await userEvent.click(await screen.findByRole('button', { name: 'この設定でサーバー構築' }))
+    await screen.findByRole('heading', { name: '構築内容の確認' })
+    await userEvent.click(screen.getByRole('button', { name: 'ARKサーバーを構築して起動' }))
+
+    expect(await screen.findByRole('heading', { name: 'サーバー構築' })).toBeInTheDocument()
+    expect(window.location.pathname).toBe('/servers/new/asa/progress')
+    expect(await screen.findByText('ARK: Survival Ascendedサーバーを構築して起動しました')).toBeInTheDocument()
+  })
+
   it('作成済みPalworldの管理画面を表示する', async () => {
     window.history.pushState({}, '', '/servers/palworld')
     render(<App />)
@@ -277,6 +304,9 @@ function appFetch(applicationResponses: Response[] = [], demoEnabled = true) {
     }
     if (url === '/api/servers') {
       return response([])
+    }
+    if (url.endsWith('/constructions/progress')) {
+      return new Response('', { status: 204 })
     }
     if (url === '/api/servers/palworld') {
       return response(demoPalworldServer())

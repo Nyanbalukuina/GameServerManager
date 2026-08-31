@@ -4,7 +4,7 @@ param(
     [string]$Action,
     [ValidateRange(1, 65535)]
     [int]$ManagementPort = 8080,
-    [string]$StorageRoot = 'C:\GameServerManager',
+    [string]$StorageRoot = '',
     [string]$JarPath = '',
     [string]$JavawPath = ''
 )
@@ -26,7 +26,12 @@ function ConvertTo-SingleQuotedLiteral([string]$Value) {
 }
 
 function Resolve-SetupPaths {
-    $script:resolvedStorageRoot = [System.IO.Path]::GetFullPath($StorageRoot)
+    $effectiveStorageRoot = if ($StorageRoot) {
+        $StorageRoot
+    } else {
+        Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'GameServerManager'
+    }
+    $script:resolvedStorageRoot = [System.IO.Path]::GetFullPath($effectiveStorageRoot)
     $effectiveJarPath = if ($JarPath) { $JarPath } else { Join-Path $PSScriptRoot 'game-server-manager.jar' }
     $script:resolvedJarPath = [System.IO.Path]::GetFullPath($effectiveJarPath)
     if ($JavawPath) {

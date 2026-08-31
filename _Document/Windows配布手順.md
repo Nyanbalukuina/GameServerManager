@@ -85,7 +85,7 @@ cd D:\_GitHub\GameServerManager\backend
 - `GameServerManager.exe` の起動後にターミナルが表示されない
 - 既定ブラウザで `http://localhost:8080` が開く
 - 管理画面にログインなしでアクセスできる
-- 初期保存先が `C:\GameServerManager` 配下になっている
+- 初期保存先が `%LOCALAPPDATA%\GameServerManager` 配下になっている
 - 配布版にデモ構築が表示されない
 - ARKとPalworldの構築画面を表示できる
 - Windowsの「インストールされているアプリ」からアンインストールできる

@@ -4,13 +4,22 @@ import { PalworldConstructionPage } from './pages/palworld/PalworldConstructionP
 import { PalworldManagementPage } from './pages/palworld/PalworldManagementPage'
 import { AsaConstructionPage } from './pages/asa/AsaConstructionPage'
 import { AsaManagementPage } from './pages/asa/AsaManagementPage'
+import { ConstructionExecutionPage } from './pages/ConstructionExecutionPage'
 import { getFeatureConfiguration } from './api/features'
 import type { FeatureConfiguration } from './types/features'
+import type { ConstructionExecution } from './types/constructionExecution'
 
 function App() {
   const [path, setPath] = useState(window.location.pathname)
   const [features, setFeatures] = useState<FeatureConfiguration | null>(null)
   const [configurationError, setConfigurationError] = useState<string | null>(null)
+  const [constructionExecution, setConstructionExecution] = useState<ConstructionExecution | null>(null)
+
+  const startConstruction = (execution: ConstructionExecution) => {
+    setConstructionExecution(execution)
+    window.history.pushState({}, '', `/servers/new/${execution.game.toLowerCase()}/progress`)
+    window.dispatchEvent(new PopStateEvent('popstate'))
+  }
 
   useEffect(() => {
     getFeatureConfiguration()
@@ -44,7 +53,9 @@ function App() {
     case '/servers/new/palworld':
       return <PalworldConstructionPage demoEnabled={features.demoEnabled} />
     case '/servers/new/asa':
-      return <AsaConstructionPage demoEnabled={features.demoEnabled} />
+      return <AsaConstructionPage demoEnabled={features.demoEnabled} onStartConstruction={startConstruction} />
+    case '/servers/new/asa/progress':
+      return <ConstructionExecutionPage execution={constructionExecution} />
     case '/servers/asa':
       return <AsaManagementPage />
     case '/servers/palworld':
